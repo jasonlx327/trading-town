@@ -1,0 +1,1022 @@
+{
+ "_comment": "Trading 小镇 配置/素材清单。所有路径相对于 /workspace/trading-team/town/。素材文件不存在时自动回退到程序绘制的像素占位图。设计 bot 交付素材后，只需改这里（或按同名路径放进 ../town-assets/）。",
+ "refreshSeconds": 180,
+ "canvas": {
+  "width": 1280,
+  "height": 720,
+  "pixel": 4
+ },
+ "districts": {
+  "us": {
+   "name": "美股",
+   "sources": {
+    "tradeLog": "../logs/trade-log.csv",
+    "heartbeat": "../logs/heartbeat.csv",
+    "holdings": "../data/holdings-baseline.csv",
+    "researchSignal": "../backtest/current_signal.json",
+    "haltFlag": "../logs/halt.flag",
+    "reconDir": "../reports/",
+    "reconPrefix": "recon-",
+    "earnings": "../data/earnings-calendar.csv",
+    "snapshotGlobs": {
+     "funding": "../data/funding-snapshot-",
+     "account": "../data/account-snapshot-"
+    }
+   },
+   "placeholderLabel": "暂无日志记录"
+  },
+  "crypto": {
+   "name": "加密货币",
+   "sources": {
+    "tradeLog": "../logs/crypto-trade-log.csv",
+    "heartbeat": "../logs/crypto-heartbeat.csv",
+    "haltFlag": "../logs/halt.flag"
+   },
+   "placeholderLabel": "待接入数据 / 纸上研究",
+   "hideVisualsWithoutData": true
+  }
+ },
+ "roles": {
+  "strategist": {
+   "name": "策略官",
+   "color": "#e0a030"
+  },
+  "risk": {
+   "name": "风控官",
+   "color": "#d04848"
+  },
+  "trader": {
+   "name": "交易员",
+   "color": "#3c8ce0"
+  },
+  "data": {
+   "name": "数据官",
+   "color": "#40b070"
+  }
+ },
+ "assets": {
+  "_readme": "v2.3 海滨城市素材。坐标均为原生像素，画布放大 layout.scale 倍。缺失的文件自动跳过（建筑回退为色块占位）。",
+  "font": {
+   "family": "FusionPixel",
+   "src": "../town-assets/fonts/fusion-pixel-12px-proportional-zh_hans.ttf"
+  },
+  "ground": {
+   "frames": [
+    "generated/ground_0.png",
+    "generated/ground_1.png",
+    "generated/ground_2.png",
+    "generated/ground_3.png"
+   ],
+   "fps": 4,
+   "_build": "python3 town/build_ground.py（调用素材包 src/town.py 的 render_ground）"
+  },
+  "buildings": {
+   "hub": {
+    "src": "../town-assets/buildings/labeled/bld_trading_hub_labeled_anim_sheet.png",
+    "frames": 4,
+    "fps": 4,
+    "size": [
+     96,
+     144
+    ],
+    "door": [
+     48,
+     142
+    ],
+    "screenRect": [
+     27,
+     57,
+     42,
+     13
+    ]
+   },
+   "warroom": {
+    "src": "../town-assets/buildings/labeled/bld_war_room_labeled.png",
+    "size": [
+     96,
+     80
+    ],
+    "door": [
+     48,
+     78
+    ]
+   },
+   "strategist": {
+    "src": "../town-assets/buildings/labeled/bld_strategist_labeled.png",
+    "size": [
+     64,
+     80
+    ],
+    "door": [
+     32,
+     78
+    ]
+   },
+   "data": {
+    "src": "../town-assets/buildings/labeled/bld_data_officer_labeled.png",
+    "size": [
+     64,
+     80
+    ],
+    "door": [
+     32,
+     78
+    ]
+   },
+   "risk": {
+    "src": "../town-assets/buildings/labeled/bld_risk_officer_labeled.png",
+    "size": [
+     64,
+     80
+    ],
+    "door": [
+     32,
+     78
+    ]
+   },
+   "trader": {
+    "src": "../town-assets/buildings/labeled/bld_trader_labeled.png",
+    "size": [
+     64,
+     80
+    ],
+    "door": [
+     32,
+     78
+    ]
+   }
+  },
+  "characters": {
+   "strategist": {
+    "sheet": "../town-assets/characters/strategist/strategist_sheet.png",
+    "frameW": 32,
+    "frameH": 32,
+    "rows": [
+     "down",
+     "left",
+     "right",
+     "up"
+    ],
+    "idleCols": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "walkCols": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "idleFps": 4,
+    "walkFps": 8,
+    "anchor": [
+     16,
+     30
+    ]
+   },
+   "risk": {
+    "sheet": "../town-assets/characters/risk_officer/risk_officer_sheet.png",
+    "frameW": 32,
+    "frameH": 32,
+    "rows": [
+     "down",
+     "left",
+     "right",
+     "up"
+    ],
+    "idleCols": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "walkCols": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "idleFps": 4,
+    "walkFps": 8,
+    "anchor": [
+     16,
+     30
+    ]
+   },
+   "trader": {
+    "sheet": "../town-assets/characters/trader/trader_sheet.png",
+    "frameW": 32,
+    "frameH": 32,
+    "rows": [
+     "down",
+     "left",
+     "right",
+     "up"
+    ],
+    "idleCols": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "walkCols": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "idleFps": 4,
+    "walkFps": 8,
+    "anchor": [
+     16,
+     30
+    ]
+   },
+   "data": {
+    "sheet": "../town-assets/characters/data_officer/data_officer_sheet.png",
+    "frameW": 32,
+    "frameH": 32,
+    "rows": [
+     "down",
+     "left",
+     "right",
+     "up"
+    ],
+    "idleCols": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "walkCols": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "idleFps": 4,
+    "walkFps": 8,
+    "anchor": [
+     16,
+     30
+    ]
+   }
+  },
+  "traderPaperSheet": "../town-assets/characters/trader/trader_paper_sheet.png",
+  "shadow": "../town-assets/props/prop_shadow_char.png",
+  "states": {
+   "hubClosed": {
+    "src": "../town-assets/states/hub/hub_sign_closed_today.png",
+    "host": "hub",
+    "offset": [
+     20,
+     115
+    ]
+   },
+   "hubBarricade": {
+    "src": "../town-assets/states/hub/hub_barricade_anim.png",
+    "frames": 2,
+    "fps": 2,
+    "host": "hub",
+    "offset": [
+     16,
+     116
+    ]
+   },
+   "riskLamp": {
+    "srcPattern": "../town-assets/states/risk/risk_lamp_{state}_anim.png",
+    "states": [
+     "green",
+     "yellow",
+     "orange",
+     "red",
+     "off"
+    ],
+    "frames": 2,
+    "fps": 2,
+    "host": "risk",
+    "offset": [
+     4,
+     2
+    ]
+   },
+   "dataLampOk": {
+    "src": "../town-assets/states/data/data_lamp_ok.png",
+    "host": "data",
+    "offset": [
+     26,
+     46
+    ]
+   },
+   "dataLampStale": {
+    "src": "../town-assets/states/data/data_lamp_stale.png",
+    "host": "data",
+    "offset": [
+     26,
+     46
+    ]
+   },
+   "iconStale": {
+    "src": "../town-assets/states/icons/icon_stale_data.png"
+   },
+   "iconEarnings": {
+    "src": "../town-assets/states/icons/icon_earnings_window.png"
+   },
+   "reviewBoard": {
+    "src": "../town-assets/states/war_room/warroom_review_board.png",
+    "host": "warroom",
+    "offset": [
+     -28,
+     -52
+    ]
+   },
+   "reviewBoardCard": {
+    "src": "../town-assets/states/war_room/warroom_review_board_with_card.png",
+    "host": "warroom",
+    "offset": [
+     -28,
+     -52
+    ]
+   },
+   "stampApprove": {
+    "src": "../town-assets/states/war_room/warroom_stamp_approve.png",
+    "offsetInBoard": [
+     6,
+     26
+    ]
+   },
+   "stampReject": {
+    "src": "../town-assets/states/war_room/warroom_stamp_reject.png",
+    "offsetInBoard": [
+     6,
+     26
+    ]
+   },
+   "reasonStrip": {
+    "src": "../town-assets/states/war_room/warroom_reason_strip.png",
+    "offsetInBoard": [
+     42,
+     22
+    ],
+    "textRectInBoard": [
+     45,
+     24,
+     98,
+     12
+    ]
+   }
+  }
+ },
+ "meeting": {
+  "_comment": "触发进会议室的真实日志事件：type 或 risk_decision 匹配下列关键词（不区分大小写），且记录时间在 recentHours 内；否则角色闲逛。",
+  "typeKeywords": [
+   "signal",
+   "proposal",
+   "propose",
+   "risk_review",
+   "review",
+   "信号",
+   "提议",
+   "风控"
+  ],
+  "riskDecisionTriggers": true,
+  "recentHours": 24,
+  "durationSeconds": 20
+ },
+ "tradeEvent": {
+  "_comment": "交易员只在真实成交(filled_qty>0)时走向 Hub，且需风控绿章（同 signal_id 或本行 risk_decision 批准），或预授权止损(preauth_stop_price 非空 / order_kind 含 stop)",
+  "recentHours": 24,
+  "durationSeconds": 16
+ },
+ "baseline": {
+  "_comment": "起始资产，来自真实记录，不是估算",
+  "equity_usd": 2489.57,
+  "as_of_cst": "2026-09-30 00:11",
+  "source": "backtest-report.md「起始 2,489.57 USD」= holdings-baseline.csv 截图市值 LITE≈1,286 + TSLA≈1,203.57",
+  "holdingsCsv": "../data/holdings-baseline.csv",
+  "tickers": [
+   "LITE",
+   "TSLA"
+  ]
+ },
+ "benchmark": {
+  "ticker": "SPY",
+  "_comment": "SPY 对比：取心跳中 ticker=SPY 的首条(基准)与最新价格；无 SPY 心跳 => —"
+ },
+ "risk": {
+  "drawdownTiers": [
+   {
+    "min": 0,
+    "state": "green",
+    "color": "#3fd86a",
+    "label": "正常 <5%"
+   },
+   {
+    "min": 5,
+    "state": "yellow",
+    "color": "#f5d44a",
+    "label": "预警 ≥5%"
+   },
+   {
+    "min": 10,
+    "state": "orange",
+    "color": "#e8862a",
+    "label": "警戒 ≥10%"
+   },
+   {
+    "min": 15,
+    "state": "red",
+    "color": "#d24a4a",
+    "label": "全面停止 ≥15%（仅用户可恢复）"
+   }
+  ],
+  "dailyHalt": {
+   "consecutiveLosses": 3,
+   "dailyLossPct": -3
+  },
+  "haltStatusKeywords": [
+   "halt",
+   "kill",
+   "暂停",
+   "停止"
+  ],
+  "resumeKeywords": [
+   "resume",
+   "恢复"
+  ],
+  "hardStopDrawdown": 15,
+  "_source": "RULES.md v1（2026-09-30 15:49）：单日亏 3% 当天停手；回撤 15% 全停仅用户恢复；设计素材 v2.3 灯档 5/10/15"
+ },
+ "data": {
+  "staleMinutes": 15,
+  "_recon": "reports/recon-*.csv 最新一份：任一行 match/matched=false|no|0、status 含 mismatch/不符/差异，或 |diff_usd|>0.5 => 对账不符",
+  "_earnings": "data/earnings-calendar.csv 列: ticker,next_earnings_date,status(estimated|confirmed),source,updated_cst。确认日 2 个交易日窗口，预估日 5 个交易日窗口",
+  "earningsWindowDays": {
+   "confirmed": 2,
+   "estimated": 5
+  }
+ },
+ "decision": {
+  "approveKeywords": [
+   "approve",
+   "approved",
+   "pass",
+   "ok",
+   "通过",
+   "批准"
+  ],
+  "rejectKeywords": [
+   "reject",
+   "rejected",
+   "veto",
+   "deny",
+   "否决",
+   "拒绝",
+   "驳回"
+  ]
+ },
+ "ledger": {
+  "liveModeKeywords": [
+   "live",
+   "实盘"
+  ],
+  "_comment": "mode 列含 live/实盘 => 实盘账本；其他一律纸上账本。两本账永不合并"
+ },
+ "layout": {
+  "_readme": "原生像素坐标（640×360），画布放大 scale 倍。建筑 x/bottom = 左边缘/地面线（底部居中锚点），door 为素材内门的位置。routes = 角色脚底行走路线（门 → … → 广场(320,216) → Hub 门(320,206)），来自 manifest.concept_layout_native_640x360.walk_routes_px。换新布局只改本段 + 重新生成地面。",
+  "native": [
+   640,
+   360
+  ],
+  "scale": 2,
+  "buildings": {
+   "hub": {
+    "x": 272,
+    "bottom": 208
+   },
+   "warroom": {
+    "x": 368,
+    "bottom": 144
+   },
+   "strategist": {
+    "x": 128,
+    "bottom": 144
+   },
+   "data": {
+    "x": 480,
+    "bottom": 144
+   },
+   "risk": {
+    "x": 192,
+    "bottom": 272
+   },
+   "trader": {
+    "x": 384,
+    "bottom": 272
+   }
+  },
+  "routes": {
+   "strategist": [
+    [
+     160,
+     144
+    ],
+    [
+     160,
+     152
+    ],
+    [
+     262,
+     152
+    ],
+    [
+     262,
+     216
+    ],
+    [
+     320,
+     216
+    ],
+    [
+     320,
+     206
+    ]
+   ],
+   "data": [
+    [
+     512,
+     144
+    ],
+    [
+     512,
+     152
+    ],
+    [
+     378,
+     152
+    ],
+    [
+     378,
+     216
+    ],
+    [
+     320,
+     216
+    ],
+    [
+     320,
+     206
+    ]
+   ],
+   "warroom": [
+    [
+     416,
+     144
+    ],
+    [
+     416,
+     152
+    ],
+    [
+     378,
+     152
+    ],
+    [
+     378,
+     216
+    ],
+    [
+     320,
+     216
+    ],
+    [
+     320,
+     206
+    ]
+   ],
+   "risk": [
+    [
+     224,
+     272
+    ],
+    [
+     224,
+     280
+    ],
+    [
+     296,
+     280
+    ],
+    [
+     296,
+     216
+    ],
+    [
+     320,
+     216
+    ],
+    [
+     320,
+     206
+    ]
+   ],
+   "trader": [
+    [
+     416,
+     272
+    ],
+    [
+     416,
+     280
+    ],
+    [
+     344,
+     280
+    ],
+    [
+     344,
+     216
+    ],
+    [
+     320,
+     216
+    ],
+    [
+     320,
+     206
+    ]
+   ]
+  },
+  "decor": [
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_tower_0.png",
+    "x": 8,
+    "bottom": 144
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_apartment_0.png",
+    "x": 60,
+    "bottom": 144
+   },
+   {
+    "src": "../town-assets/props/prop_billboard_stock.png",
+    "x": 206,
+    "bottom": 140,
+    "tag": "billboard"
+   },
+   {
+    "src": "../town-assets/props/prop_sign_coin.png",
+    "x": 550,
+    "bottom": 140,
+    "crypto": true
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_tower_1.png",
+    "x": 588,
+    "bottom": 144,
+    "crypto": true
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_shop_0.png",
+    "x": 8,
+    "bottom": 272
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_us_office_1.png",
+    "x": 64,
+    "bottom": 272
+   },
+   {
+    "src": "../town-assets/props/prop_billboard_stock.png",
+    "x": 124,
+    "bottom": 266
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_shop_1.png",
+    "x": 464,
+    "bottom": 272,
+    "crypto": true
+   },
+   {
+    "src": "../town-assets/buildings/unlabeled/bld_filler_apartment_1.png",
+    "x": 524,
+    "bottom": 272,
+    "crypto": true
+   },
+   {
+    "src": "../town-assets/props/prop_sign_coin.png",
+    "x": 584,
+    "bottom": 266,
+    "crypto": true
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 4,
+    "bottom": 62
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 104,
+    "bottom": 60
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 228,
+    "bottom": 62
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 256,
+    "bottom": 62
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 432,
+    "bottom": 62
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 460,
+    "bottom": 62
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 528,
+    "bottom": 60
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 40,
+    "bottom": 158
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 240,
+    "bottom": 158
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 440,
+    "bottom": 158
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 600,
+    "bottom": 158
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 24,
+    "bottom": 206
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 168,
+    "bottom": 206
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 456,
+    "bottom": 206
+   },
+   {
+    "src": "../town-assets/props/prop_streetlamp.png",
+    "x": 600,
+    "bottom": 206
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 254,
+    "bottom": 256
+   },
+   {
+    "src": "../town-assets/props/prop_street_tree.png",
+    "x": 354,
+    "bottom": 256
+   },
+   {
+    "src": "../town-assets/props/prop_traffic_light.png",
+    "x": 248,
+    "bottom": 190
+   },
+   {
+    "src": "../town-assets/props/prop_traffic_light.png",
+    "x": 376,
+    "bottom": 190
+   },
+   {
+    "src": "../town-assets/props/prop_planter.png",
+    "x": 258,
+    "bottom": 142
+   },
+   {
+    "src": "../town-assets/props/prop_planter.png",
+    "x": 350,
+    "bottom": 142
+   },
+   {
+    "src": "../town-assets/props/prop_hydrant.png",
+    "x": 116,
+    "bottom": 204
+   },
+   {
+    "src": "../town-assets/props/prop_trash_bin.png",
+    "x": 616,
+    "bottom": 156
+   },
+   {
+    "src": "../town-assets/props/prop_bollard.png",
+    "x": 290,
+    "bottom": 222
+   },
+   {
+    "src": "../town-assets/props/prop_bollard.png",
+    "x": 334,
+    "bottom": 222
+   },
+   {
+    "src": "../town-assets/props/prop_trash_bin.png",
+    "x": 110,
+    "bottom": 286
+   },
+   {
+    "src": "../town-assets/props/prop_hydrant.png",
+    "x": 520,
+    "bottom": 156
+   },
+   {
+    "src": "../town-assets/props/prop_bench.png",
+    "x": 120,
+    "bottom": 282
+   },
+   {
+    "src": "../town-assets/props/prop_bench.png",
+    "x": 500,
+    "bottom": 282
+   },
+   {
+    "src": "../town-assets/props/prop_bench.png",
+    "x": 236,
+    "bottom": 282
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": -6,
+    "bottom": 300
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 90,
+    "bottom": 300
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 180,
+    "bottom": 300
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 252,
+    "bottom": 300
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 356,
+    "bottom": 302
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 470,
+    "bottom": 302
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 560,
+    "bottom": 302
+   },
+   {
+    "src": "../town-assets/props/prop_palm.png",
+    "x": 616,
+    "bottom": 301
+   },
+   {
+    "src": "../town-assets/props/prop_beach_umbrella_red.png",
+    "x": 40,
+    "bottom": 308
+   },
+   {
+    "src": "../town-assets/props/prop_beach_umbrella_blue.png",
+    "x": 208,
+    "bottom": 310
+   },
+   {
+    "src": "../town-assets/props/prop_beach_umbrella_red.png",
+    "x": 420,
+    "bottom": 309
+   },
+   {
+    "src": "../town-assets/props/prop_beach_towel_orange.png",
+    "x": 58,
+    "bottom": 314
+   },
+   {
+    "src": "../town-assets/props/prop_beach_towel_purple.png",
+    "x": 440,
+    "bottom": 315
+   },
+   {
+    "src": "../town-assets/props/prop_lifeguard_tower.png",
+    "x": 492,
+    "bottom": 312
+   },
+   {
+    "src": "../town-assets/props/prop_surfboard_orange.png",
+    "x": 148,
+    "bottom": 312
+   },
+   {
+    "src": "../town-assets/props/prop_surfboard_cyan.png",
+    "x": 540,
+    "bottom": 311
+   },
+   {
+    "src": "../town-assets/props/prop_sailboat.png",
+    "x": 590,
+    "bottom": 350
+   },
+   {
+    "src": "../town-assets/props/prop_sailboat.png",
+    "x": 110,
+    "bottom": 356
+   },
+   {
+    "src": "../town-assets/props/prop_buoy.png",
+    "x": 250,
+    "bottom": 344
+   },
+   {
+    "src": "../town-assets/props/prop_buoy.png",
+    "x": 470,
+    "bottom": 346
+   },
+   {
+    "src": "../town-assets/props/prop_car_h_blue.png",
+    "x": 60,
+    "bottom": 191,
+    "flipX": false
+   },
+   {
+    "src": "../town-assets/props/prop_car_h_gold.png",
+    "x": 470,
+    "bottom": 191,
+    "flipX": false
+   },
+   {
+    "src": "../town-assets/props/prop_car_h_red.png",
+    "x": 150,
+    "bottom": 175,
+    "flipX": true
+   },
+   {
+    "src": "../town-assets/props/prop_car_h_white.png",
+    "x": 540,
+    "bottom": 175,
+    "flipX": true
+   },
+   {
+    "src": "../town-assets/props/prop_car_v_red.png",
+    "x": 304,
+    "bottom": 41,
+    "flipY": false
+   },
+   {
+    "src": "../town-assets/props/prop_car_v_blue.png",
+    "x": 320,
+    "bottom": 111,
+    "flipY": true
+   }
+  ],
+  "sideLabels": [
+   {
+    "text": "◀ 美股 STOCKS",
+    "x": 150,
+    "y": 200,
+    "district": "us"
+   },
+   {
+    "text": "加密 CRYPTO ▶",
+    "x": 500,
+    "y": 200,
+    "district": "crypto"
+   }
+  ]
+ },
+ "version": "v2.3 seaside",
+ "hub": {
+  "name": "Trading Hub",
+  "subtitle": "Trading Hub · 只读看板（本页不连接交易所）"
+ },
+ "dataBundle": "data/town-data.json"
+}

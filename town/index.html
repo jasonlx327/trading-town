@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Trading 小镇 · 纸上交易团队</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="title">TRADING 小镇 <span class="sub">纸上交易团队 · Paper Trading Town</span></div>
+  <div class="banner">只读看板 · 本页不连接交易所、不含任何 Key、不下单 · 数据来自团队日志与账户快照</div>
+  <div class="clock" id="clock">—</div>
+</header>
+<main>
+  <section class="stage">
+    <canvas id="town" width="1280" height="720"></canvas>
+    <div class="legend">点击建筑查看详情 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新</div>
+  </section>
+  <aside>
+    <div class="panel" id="panel-us"></div>
+    <div class="panel" id="panel-crypto"></div>
+    <div class="panel" id="panel-detail"><h3>建筑详情</h3><div class="muted">点击小镇中的建筑</div></div>
+  </aside>
+</main>
+<section class="feedwrap">
+  <h3>实时动态 LIVE FEED <span class="muted" id="feedMeta"></span></h3>
+  <ul id="feed"></ul>
+</section>
+<script src="town.js"></script>
+</body>
+</html>
