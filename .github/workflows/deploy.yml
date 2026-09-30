@@ -1,0 +1,42 @@
+name: deploy-town
+# 由 scripts/publish_town.sh 触发：下载已脱敏的静态包（校验 sha256）→ 再扫一次密钥 → 发布到 GitHub Pages
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_url:
+        description: "town-public.tgz 的临时下载地址"
+        required: true
+      sha256:
+        description: "tgz 的 sha256"
+        required: true
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Download, verify, scan
+        env:
+          BUNDLE_URL: ${{ inputs.bundle_url }}
+          BUNDLE_SHA: ${{ inputs.sha256 }}
+        run: |
+          curl -fsSL --retry 3 "$BUNDLE_URL" -o bundle.tgz
+          echo "$BUNDLE_SHA  bundle.tgz" | sha256sum -c -
+          mkdir _site && tar -xzf bundle.tgz -C _site
+          if grep -rIEn 'binance\.env|api[_-]?secret|X-MBX-APIKEY|BINANCE_API|TRD_GRP|apiRestrictions|ipRestrict|188\.253\.|BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9]{20}|github_pat_' _site; then
+            echo "secret-like content found; aborting"; exit 1
+          fi
+          ls -la _site _site/town
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploy
+        uses: actions/deploy-pages@v4
