@@ -91,9 +91,10 @@ function decisionOf(r) {
 }
 const isLive = r => kwMatch(r.mode, CFG.ledger.liveModeKeywords);
 const isFill = r => (num(r.filled_qty) || 0) > 0;
+const isCountedFill = r => isFill(r) && !kwMatch(r.type, ['convert', 'dust', 'transfer', '兑换', '划转']) && !kwMatch(r.order_kind, ['stop', '止损', 'convert', 'dust']) && String(r.counts_toward_daily_cap || '').trim().toLowerCase() !== 'no';
 const isPreauthStop = r => !!r.preauth_stop_price || kwMatch(r.order_kind, ['stop', '止损']) || kwMatch(r.type, ['stop', '止损']);
 function ledgerOf(rows, last) {
-  const fills = rows.filter(isFill);
+  const fills = rows.filter(isCountedFill);
   const closed = rows.filter(r => num(r.realized_pnl_usd) != null);
   const wins = closed.filter(r => num(r.realized_pnl_usd) > 0).length;
   const fees = rows.reduce((s, r) => { const v = num(r.fee_in_quote) ?? num(r.fee); return v == null ? s : (s ?? 0) + v; }, null);
@@ -235,7 +236,7 @@ async function refresh() {
   else if (fill) startTradeRun(fill);
   STATE.firstLoad = false;
   await loadRants(); await loadCards();
-  if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每天 08:44 快照后及每笔真实成交后重新发布）`;
+  if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每 30 分钟自动刷新余额与价格；成交在日志同步后更新）`;
   renderPanels(); renderFeed();
 }
 
@@ -419,7 +420,8 @@ function drawHubOverlay(b, t, at) {
 function hubLines() {
   const us = STATE.us, L = [];
   if (haltedAny()) L.push({ s: '风控暂停', c: '#f28a8a' }); else if (dailyAny()) L.push({ s: '今日休市', c: '#f28a8a' }); else L.push({ s: us.hasData ? '● 运行中' : '待数据', c: '#3fd86a' });
-  L.push({ s: '权益 ' + (us.equity != null ? '$' + fmt(us.equity, 0) : '—') });
+  let eqHub = us.equity; if (eqHub == null) { try { eqHub = CARDS?.equity?.equity ?? null; } catch (_) { eqHub = null; } }
+  L.push({ s: '权益 ' + (eqHub != null ? '$' + fmt(eqHub, 0) : '—') });
   const fills = us.paper.fills + us.live.fills + STATE.crypto.paper.fills + STATE.crypto.live.fills;
   L.push({ s: `成交 ${fills} 笔` });
   for (const p of us.positions) if (p.qty != null) L.push({ s: `${p.tk} ${fmt(p.qty, 2)}`, c: '#a0f0f0' });
@@ -617,7 +619,7 @@ function showDetail(k) {
     h += cRow('最新权益', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
     h += cRow('资产最高点', money(e.hwm)) + cRow('当前回撤', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('今日盈亏', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
     h += goalBar(C);
-    if (e.source) h += `<div class="cnote">口径：${esc(e.source)}（data/equity-hwm.csv）</div>`;
+    if (e.source) h += `<div class="cnote">口径：${esc(e.source)}（${esc(e.file || 'data/equity-hwm.csv')}）</div>`;
     h += cRow('下次例行', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
     h += rantFor('data');
   } else if (k === 'hub') {
@@ -625,7 +627,7 @@ function showDetail(k) {
     h += `<div class="csec">持仓（最新快照${C.holdingsAt ? ' · ' + esc(hhmm(new Date(C.holdingsAt))) + ' 北京' : ''}）</div>`;
     h += C.holdings?.length ? `<table class="ctab"><tr><th>资产</th><th>账户</th><th>数量</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
     h += rulesBlock(C.rules) + goalBar(C);
-    h += cRow('成交笔数', C.fillCount ?? NA);
+    h += cRow('成交笔数', C.fillCount == null ? NA : `${C.fillCount}${C.fillsToday != null && C.fillsTodayCap ? `（今日 ${C.fillsToday}/${C.fillsTodayCap}）` : ''}`);
     h += rantFor('designer');
   } else if (k === 'warroom') {
     h += cRow('当前状态', fx.meeting ? '审议中' : '空闲');
