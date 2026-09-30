@@ -421,7 +421,9 @@ function frame(nowT) {
 }
 let lastT = performance.now();
 /* ---------- 面板（每个数字都带来源 + 更新时间） ---------- */
-function row(label, val, src, time, stale) { return `<div class="r${stale ? ' stale' : ''}"><span>${label}</span><b>${val}</b><i>${esc(src)}${time ? ' · ' + esc(time) : ''}</i></div>`; }
+const KEY_ROWS = new Set(['总资产 USD', '起始资产 USD']);
+function row(label, val, src, time, stale) { const tip = `来源: ${src || '—'}${time ? ' · ' + time : ''}`; return `<div class="r${stale ? ' stale' : ''}${KEY_ROWS.has(label) ? ' key' : ''}" title="${esc(tip)}"><span>${label}<em class="src-i">ⓘ</em></span><b>${val}</b><i>${esc(src)}${time ? ' · ' + esc(time) : ''}</i></div>`; }
+document.addEventListener('click', e => { const r = e.target.closest && e.target.closest('.r'); if (r) r.classList.toggle('open'); });
 function ledgerHTML(name, L, stale) {
   const t = L.lastTime || null, src = 'trade-log.csv';
   let h = `<div class="ledger"><h4>${name}</h4>` +
@@ -509,6 +511,9 @@ cv.addEventListener('click', ev => {
   if (!CFG) { document.body.insertAdjacentHTML('afterbegin', '<p style="color:red">town-config.json 加载失败</p>'); return; }
   S = CFG.layout.scale || 2;
   document.getElementById('refreshSec').textContent = CFG.refreshSeconds;
+  const tg = document.getElementById('srcToggle'), setSrc = on => { document.body.classList.toggle('showsrc', on); tg.textContent = on ? '隐藏数据来源' : '显示数据来源'; try { localStorage.setItem('town.showsrc', on ? '1' : '0'); } catch {} };
+  let on0 = false; try { on0 = localStorage.getItem('town.showsrc') === '1'; } catch {}
+  setSrc(on0); tg.onclick = () => setSrc(!document.body.classList.contains('showsrc'));
   await refreshFileList(); await loadAssets(); makeChars(); await refresh();
   setInterval(refresh, CFG.refreshSeconds * 1000);
   window.__townReady = true;

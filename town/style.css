@@ -40,3 +40,49 @@ table.pos tr.srcrow td{color:#777;font-size:10px;border-bottom:1px dashed #2e2a3
 .ledger{border:1px solid #3a3550;padding:4px}
 .ledger h4{margin:0 0 2px;font-size:12px;color:#f0c040}
 @media (max-width:760px){header{flex-wrap:wrap;gap:6px}.banner{order:3;flex:1 1 100%;font-size:12px}.title .sub{display:block}aside{min-width:0;max-width:none;width:100%}}
+/* ---- v3: 更大的数据面板字号 / 布局 ---- */
+body{font-size:16px}
+.title{font-size:24px}.title .sub{font-size:14px}
+.banner{font-size:15px}.clock{font-size:15px}
+main{flex-wrap:nowrap;align-items:flex-start;gap:16px;padding:14px}
+.stage{flex:1 1 64%;max-width:none;min-width:0}
+aside{flex:0 0 35%;min-width:420px;max-width:none;gap:12px}
+.legend{font-size:14px;color:#aaa;margin-top:8px;line-height:1.5}
+.panel{padding:12px 14px}
+.panel h3,.feedwrap h3{font-size:20px;margin:0 0 8px}
+.tag{font-size:13px;padding:1px 8px}
+.sec{font-size:17px;margin:14px 0 6px;padding-bottom:3px;border-bottom:2px solid #2e2a3c}
+.sec .muted{font-size:13px}
+.muted{font-size:14px;color:#9a97a8;line-height:1.5}
+.r{font-size:16px;padding:5px 0;cursor:pointer;align-items:baseline}
+.r b{font-size:17px}
+.r.key span{font-size:17px;font-weight:700}.r.key b{font-size:23px;color:#ffe27a}
+.r i{display:none;font-size:13px;color:#9a97a8;padding-top:2px}
+body.showsrc .r i,.r.open i{display:block}
+.src-i{font-style:normal;color:#6f6c80;font-size:12px;margin-left:5px}
+body.showsrc .src-i{display:none}
+.srcbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.srcbar .muted{font-size:13px}
+#srcToggle{font:inherit;font-size:14px;background:#2a2638;color:#f0c040;border:2px solid #d4a017;padding:4px 12px;cursor:pointer}
+table.pos{font-size:15px;margin-top:4px}
+table.pos th{font-size:14px;padding:3px 4px}
+table.pos td{padding:4px 4px}
+table.pos tr.srcrow{display:none}
+body.showsrc table.pos tr.srcrow{display:table-row}
+table.pos tr.srcrow td{font-size:13px;color:#9a97a8}
+.ledgers{gap:10px;margin-top:10px}
+.ledger{padding:8px}
+.ledger h4{font-size:16px;margin:0 0 4px}
+.ledger .r{font-size:15px}.ledger .r b{font-size:16px}
+.warn{font-size:15px;padding:4px 8px}
+.feedwrap{margin:0 14px 18px;padding:12px 14px}
+#feed{font-size:15px;max-height:300px}
+#feed li{padding:5px 6px}
+@media (max-width:1100px){
+  main{flex-direction:column;flex-wrap:wrap}
+  .stage,aside{flex:1 1 auto;width:100%;min-width:0;max-width:none}
+  .tblwrap,table.pos{display:block;overflow-x:auto;white-space:nowrap}
+}
+@media (max-width:760px){header{flex-wrap:wrap;gap:6px}.banner{order:3;flex:1 1 100%;font-size:14px}.title .sub{display:block}
+  main{padding:8px}.feedwrap{margin:0 8px 12px}.ledgers{grid-template-columns:1fr}}
+table.pos small{font-size:12px;color:#aaa}
