@@ -15,14 +15,14 @@
 <main>
   <section class="stage">
     <canvas id="town" width="1280" height="720"></canvas>
-    <div class="legend">点击建筑查看详情 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新<span id="dataGen"></span></div>
+    <div class="legend">点击 / 轻触建筑查看信息卡 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新<span id="dataGen"></span></div>
     <section class="rantwall" id="rantwall"><h3>☕ 摸鱼角 · 吐槽墙 <span class="muted">纯属玩笑 · bot 们的打工自述 · <span id="rantMeta"></span></span></h3><div class="rants" id="rants"></div></section>
   </section>
   <aside>
     <div class="srcbar"><button id="srcToggle" type="button">显示数据来源</button><span class="muted">悬停或点击任一行也可查看该数字的来源与更新时间</span></div>
     <div class="panel" id="panel-us"></div>
     <div class="panel" id="panel-crypto"></div>
-    <div class="panel" id="panel-detail"><h3>建筑详情</h3><div class="muted">点击小镇中的建筑</div></div>
+    <div class="panel" id="panel-detail"><h3>建筑信息卡</h3><div class="muted">点击 / 轻触小镇里的任一建筑（策略官、风控官、交易员、数据官、会议室、Trading Hub）打开信息卡</div></div>
   </aside>
 </main>
 <section class="feedwrap">
@@ -30,5 +30,6 @@
   <ul id="feed"></ul>
 </section>
 <script src="town.js"></script>
+<div id="card" class="cardwrap" hidden role="dialog" aria-modal="true"><div class="card"><button class="cclose" type="button" aria-label="关闭">✕</button><div class="cbody"></div></div></div>
 </body>
 </html>

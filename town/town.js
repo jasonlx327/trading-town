@@ -234,7 +234,7 @@ async function refresh() {
   if (meet) startMeeting(meet, fill || null);
   else if (fill) startTradeRun(fill);
   STATE.firstLoad = false;
-  await loadRants();
+  await loadRants(); await loadCards();
   if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每天 08:44 快照后及每笔真实成交后重新发布）`;
   renderPanels(); renderFeed();
 }
@@ -471,7 +471,7 @@ function frame(nowT) {
   for (const c of chars) items.push({ y: c.y + 4, d: () => drawChar(c, t) });
   items.push({ y: (CFG.rants?.sign || [322, 304])[1] + 26, d: drawRantSign });
   items.sort((a, b) => a.y - b.y).forEach(o => o.d());
-  tickBubble(Date.now()); drawBubble(Date.now());
+  drawHover(t); tickBubble(Date.now()); drawBubble(Date.now());
   for (const l of CFG.layout.sideLabels || []) { const off = l.district === 'crypto' && !STATE.crypto.hasData; text(l.text + (off ? '（待接入）' : ''), X(l.x), X(l.y), off ? '#a7a9b8' : '#fff1a8'); }
   document.getElementById('clock').textContent = new Date().toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai' }) + ' 北京时间';
   requestAnimationFrame(frame);
@@ -547,22 +547,116 @@ function renderFeed() {
     (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts || '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">暂无真实日志事件 — 角色在小镇闲逛</li>');
   ul.querySelectorAll('li.ev').forEach(li => li.onclick = () => { const e = STATE.feed[+li.dataset.i], d = STATE[e.district]; if (!d.visuals) return; if (e.isMeet) startMeeting(e, null); else if (e.isTrade && gateOK(d, e.row)) startTradeRun(e); });
 }
+/* ---------- 建筑信息卡（数据来自 data/town-cards.json，发布时生成；缺数据显示「暂无」） ---------- */
+let CARDS = null, HOVER = null;
+async function loadCards() { if (CFG.cards) { const c = await fetchJSON(CFG.cards.src); if (c) CARDS = c; } }
+const NA = '暂无';
+const bjNow = () => new Date(Date.now() + 8 * 3600e3); // 用 UTC 字段读北京时间
+function nextRun(sc) {
+  if (!sc) return NA;
+  const [hh, mm] = sc.time.split(':').map(Number), n = bjNow();
+  for (let add = 0; add < 8; add++) {
+    const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, hh, mm));
+    const wd = d.getUTCDay(); if (sc.days === 'weekdays' && (wd === 0 || wd === 6)) continue;
+    if (d > n) { const mins = Math.round((d - n) / 60000), dayL = add === 0 ? '今天' : add === 1 ? '明天' : `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
+      return `${dayL} ${sc.time} 北京（${mins >= 60 ? Math.floor(mins / 60) + ' 小时 ' : ''}${mins % 60} 分钟后）${sc.days === 'weekdays' ? ' · 美股交易日' : ' · 每天'}`; }
+  }
+  return NA;
+}
+const bjT = s => { if (!s) return NA; return String(s).replace('T', ' ').replace(/\+08:00$/, '') + ' 北京'; };
+const cRow = (k, v, cls = '') => `<div class="cr ${cls}"><span>${k}</span><b>${v == null || v === '' ? NA : v}</b></div>`;
+const money = v => v == null ? NA : '$' + fmt(v, 2);
+function goalBar(C) {
+  const g = C?.goal, e = C?.equity;
+  if (!g || !g.base || !g.target) return cRow('翻倍目标', NA);
+  const p = e && e.goalProgressPct != null ? Math.max(0, Math.min(100, e.goalProgressPct)) : null;
+  return `<div class="goal"><div class="gl"><span>翻倍目标（${esc(g.deadline || '')}）</span><b>${money(g.base)} → ${money(g.target)}</b></div>
+    <div class="gbar"><i style="width:${p == null ? 0 : Math.max(1, p)}%"></i></div>
+    <div class="gs">当前 ${e && e.equity != null ? money(e.equity) : NA} · 进度 ${p == null ? NA : fmt(e.goalProgressPct, 2) + '%'} · 还差 ${e && e.toTarget != null ? money(e.toTarget) : NA}${e && e.ts ? ` · ${esc(bjT(e.ts))}` : ''}</div></div>`;
+}
+function rulesBlock(R) {
+  if (!R || !R.version) return cRow('风控限额', NA);
+  const v = x => x == null ? NA : x + '%';
+  return `<div class="csec">现行风控限额（RULES.md ${esc(R.version)}${R.effective ? ' · ' + esc(R.effective) + '生效' : ''}）</div><div class="rules">
+    <div><span>单笔最大亏损</span><b>${v(R.perTradePct)}</b></div><div><span>单只标的上限</span><b>${v(R.perAssetPct)}</b></div>
+    <div><span>加密合计上限</span><b>${v(R.cryptoPct)}</b></div><div><span>单日停手线</span><b>${v(R.dailyStopPct)}</b></div>
+    <div><span>回撤全停线</span><b>${v(R.ddHaltPct)}</b></div><div><span>交易类型</span><b>${R.spotOnly ? '只做现货' : NA}</b></div></div>`;
+}
+function decLine(d) { return d ? `<b class="ev">${esc(d.eventZh || d.event || '')}</b> ${esc(d.signal || '')}<br><span class="dt">${esc(d.detail || '')}</span><br><small>${esc(bjT(d.ts))} · ${esc(d.by || '')}</small>` : NA; }
+function rantFor(bot) { const l = rantsOf(bot); if (!l.length) return ''; const x = l[Math.floor(Math.random() * l.length)]; return `<div class="crant"><span>☕ 摸鱼角</span>“${esc(x.text)}”</div>`; }
 function showDetail(k) {
-  const el = document.getElementById('panel-detail'), us = STATE.us, cr = STATE.crypto;
-  const names = { hub: 'Trading Hub', warroom: 'WAR ROOM 会议室', strategist: '策略官', risk: '风控官', trader: '交易员', data: '数据官' };
-  let body = '';
-  if (k === 'hub') body = `交易所代表建筑（素材为原创黑金风格，无官方 Logo）。本页只读日志，不连接交易所。<br>交易员只在真实成交且有风控放行章（或预授权止损）时走来。<br>成交：美股 纸上 ${us.paper.fills} / 实盘 ${us.live.fills} · 加密 纸上 ${cr.paper.fills} / 实盘 ${cr.live.fills}（分账）<br>今日休市: ${dailyAny() ? '是' : '否'} · 风控暂停: ${haltedAny() ? '是' : '否'}`;
-  if (k === 'strategist') { body = `信号记录: ${us.tradeRows.filter(r => r.signal_id).length + cr.tradeRows.filter(r => r.signal_id).length}`; if (us.signal) body += `<br>研究信号（回测，非交易）as_of ${esc(us.signal.as_of)}<br>` + Object.entries(us.signal.signals || {}).map(([n, v]) => `${esc(n)}: ${Object.entries(v.weights || {}).map(([a, w]) => `${a} ${(w * 100).toFixed(0)}%`).join(' ')}`).join('<br>'); }
-  if (k === 'risk') body = DISTRICTS.map(id => { const d = STATE[id]; return `${CFG.districts[id].name}: 回撤 ${fmt(d.dd, 2, '%')} ${d.tier ? esc(d.tier.label) : '（无数据，灯灭）'} · 暂停 ${d.riskHalt ? esc(d.riskHaltReason) : '否'} · 今日休市 ${d.dailyHalt ? esc(d.dailyHaltReason) : '否'}`; }).join('<br>') + `<br>灯档: 绿 <5% · 黄 ≥5% · 橙 ≥10% · 红 ≥15%（Hub 路障，仅用户可恢复）`;
-  if (k === 'trader') body = `纸上成交 ${us.paper.fills + cr.paper.fills} · 实盘成交 ${us.live.fills + cr.live.fills}（分账）<br>${haltedAny() ? '风控暂停中：留守楼内' : '待命'}`;
-  if (k === 'data') body = DISTRICTS.map(id => { const d = STATE[id]; return `${CFG.districts[id].name}: 心跳 ${d.hbRows.length} 行 · ${d.stale ? '数据过期/无数据 — ' + esc(d.staleReason) : '新鲜'}`; }).join('<br>') + (us.snapshot ? `<br>最新快照 ${esc(hhmm(us.snapshot.taken))}` : '');
-  if (k === 'warroom') { const s = latestStamp(); body = `当前: ${fx.meeting ? '审议中' : '空闲'}<br>最近审议: ${s ? esc(`${s.state === 'approved' ? '放行' : s.state === 'rejected' ? '否决' : '待审'} ${s.signal || ''} ${s.reason || ''} (${s.time})`) : '—'}`; }
-  el.innerHTML = `<h3>${esc(names[k])}</h3><div>${body}</div>`;
+  const C = CARDS, names = { hub: 'Trading Hub 交易所', warroom: 'WAR ROOM 会议室', strategist: '策略官 STRATEGIST', risk: '风控官 RISK', trader: '交易员 TRADER', data: '数据官 DATA' };
+  const colors = { hub: '#d9a21b', warroom: '#9aa0b4', strategist: '#3f74c8', risk: '#d24a4a', trader: '#e8862a', data: '#7a4ac8' };
+  const role = C?.roles?.[k] || '';
+  let h = '';
+  if (!C) h = cRow('信息卡数据', NA + '（data/town-cards.json 未生成）');
+  else if (k === 'strategist') {
+    const s = C.signal;
+    h += cRow('当前状态', s ? (s.pendingRisk ? '<span class="warnc">最新信号待风控官审核</span>' : '已出信号') : NA);
+    h += `<div class="csec">最新信号</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · 文件更新 ${esc(s.mtime)} 北京</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>章节：${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
+    h += cRow('下次例行', nextRun(C.schedule?.strategist) + (C.schedule?.strategist ? ` · ${esc(C.schedule.strategist.what)}` : ''));
+    h += rantFor('strategist');
+  } else if (k === 'risk') {
+    const dd = C.equity?.drawdownPct, tier = dd == null ? null : [...CFG.risk.drawdownTiers].reverse().find(t => dd >= t.min);
+    h += cRow('当前状态', haltedAny() ? '<span class="warnc">风控暂停中（仅用户可恢复）</span>' : '自动审核中');
+    h += cRow('当前回撤', dd == null ? NA : `${fmt(dd, 2)}% <span style="color:${tier.color}">● ${esc(tier.label)}</span>`);
+    h += `<div class="csec">最近一次审核</div><div class="cbox">${decLine(C.riskLast)}</div>`;
+    h += rulesBlock(C.rules);
+    h += cRow('下次运行', '随信号触发（无固定时间）');
+    h += rantFor('risk');
+  } else if (k === 'trader') {
+    const f = C.fills?.length ? C.fills[C.fills.length - 1] : null;
+    h += cRow('当前状态', haltedAny() ? '<span class="warnc">风控暂停：留守楼内</span>' : fx.trade ? '正在 Hub 成交' : '待命');
+    h += cRow('最新成交', f ? `${esc(f.market)} ${esc(f.side)} ${esc(f.ticker)} ${esc(f.qty)} @ ${esc(f.price)}${f.stop ? ` · 止损 ${esc(f.stop)}` : ''} · ${esc(f.mode || '')}<br><small>${esc(bjT(f.ts))}</small>` : '暂无成交（成交记录 0 笔）');
+    h += `<div class="csec">最近动作</div><div class="cbox">${decLine(C.traderLast)}</div>`;
+    h += cRow('下次执行', nextRun(C.schedule?.trader) + (C.schedule?.trader ? ` · ${esc(C.schedule.trader.what)}` : ''));
+    h += rantFor('trader');
+  } else if (k === 'data') {
+    const e = C.equity || {};
+    h += cRow('当前状态', dataStale() ? '<span class="warnc">心跳缺失/过期（数据灯灰）</span>' : '数据新鲜');
+    h += cRow('最新权益', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
+    h += cRow('资产最高点', money(e.hwm)) + cRow('当前回撤', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('今日盈亏', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
+    h += goalBar(C);
+    if (e.source) h += `<div class="cnote">口径：${esc(e.source)}（data/equity-hwm.csv）</div>`;
+    h += cRow('下次例行', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
+    h += rantFor('data');
+  } else if (k === 'hub') {
+    h += cRow('当前状态', haltedAny() ? '<span class="warnc">路障：风控全停</span>' : dailyAny() ? '<span class="warnc">今日休市</span>' : '开放（本页只读，不连接交易所）');
+    h += `<div class="csec">持仓（最新快照${C.holdingsAt ? ' · ' + esc(hhmm(new Date(C.holdingsAt))) + ' 北京' : ''}）</div>`;
+    h += C.holdings?.length ? `<table class="ctab"><tr><th>资产</th><th>账户</th><th>数量</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
+    h += rulesBlock(C.rules) + goalBar(C);
+    h += cRow('成交笔数', C.fillCount ?? NA);
+    h += rantFor('designer');
+  } else if (k === 'warroom') {
+    h += cRow('当前状态', fx.meeting ? '审议中' : '空闲');
+    h += `<div class="csec">最近一次决策</div><div class="cbox">${decLine(C.decisionLast)}</div>`;
+    h += cRow('最新提案', C.signal ? esc(C.signal.title) : NA);
+    h += cRow('Atlas 下发目标', nextRun(C.schedule?.atlas));
+    h += rantFor('atlas');
+  }
+  const m = document.getElementById('card');
+  m.querySelector('.cbody').innerHTML = `<div class="chead" style="--c:${colors[k]}"><h2>${esc(names[k])}</h2><div class="crole">${esc(role)}</div></div>${h}<div class="cfoot">数据生成于 ${C ? esc(bjT(C.generated_at.slice(0, 16))) : NA} · 只显示真实记录，缺数据写「暂无」</div>`;
+  m.hidden = false; document.body.classList.add('cardopen'); m.querySelector('.cclose').focus({ preventScroll: true });
+}
+function closeCard() { const m = document.getElementById('card'); m.hidden = true; document.body.classList.remove('cardopen'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
+function hitBuilding(ev) {
+  const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width / S, y = (ev.clientY - r.top) * H / r.height / S;
+  const ks = Object.keys(CFG.layout.buildings).sort((a, b) => CFG.layout.buildings[b].bottom - CFG.layout.buildings[a].bottom);
+  for (const k of ks) { const b = B(k); if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return { k, x, y }; }
+  return { k: null, x, y };
+}
+cv.addEventListener('mousemove', ev => { if (!CFG) return; const h = hitBuilding(ev), sg = CFG.rants?.sign || [322, 304]; HOVER = h.k; cv.style.cursor = h.k || (Math.abs(h.x - sg[0]) < 24 && Math.abs(h.y - sg[1]) < 16) ? 'pointer' : 'default'; });
+cv.addEventListener('mouseleave', () => { HOVER = null; });
+function drawHover(t) {
+  if (!HOVER) return; const b = B(HOVER), a = 0.6 + 0.4 * Math.sin(t * 6);
+  ctx.save(); ctx.strokeStyle = `rgba(245,212,74,${a})`; ctx.lineWidth = 4; ctx.strokeRect(X(b.x) - 4, X(b.y) - 4, X(b.w) + 8, X(b.h) + 8); ctx.restore();
+  text('点击查看信息卡', X(b.x + b.w / 2), X(b.y) - 14, '#f5d44a');
 }
 cv.addEventListener('click', ev => {
-  const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width / S, y = (ev.clientY - r.top) * H / r.height / S;
-  { const sg = CFG.rants?.sign || [322, 304]; if (Math.abs(x - sg[0]) < 24 && Math.abs(y - sg[1]) < 16) return document.getElementById('rantwall').scrollIntoView({ behavior: 'smooth' }); }
-  for (const k of Object.keys(CFG.layout.buildings)) { const b = B(k); if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return showDetail(k); }
+  const h = hitBuilding(ev), sg = CFG.rants?.sign || [322, 304];
+  if (!h.k && Math.abs(h.x - sg[0]) < 24 && Math.abs(h.y - sg[1]) < 16) return document.getElementById('rantwall').scrollIntoView({ behavior: 'smooth' });
+  if (h.k) showDetail(h.k);
 });
 (async function main() {
   CFG = await fetchJSON('town-config.json');
@@ -572,6 +666,7 @@ cv.addEventListener('click', ev => {
   const tg = document.getElementById('srcToggle'), setSrc = on => { document.body.classList.toggle('showsrc', on); tg.textContent = on ? '隐藏数据来源' : '显示数据来源'; try { localStorage.setItem('town.showsrc', on ? '1' : '0'); } catch {} };
   let on0 = false; try { on0 = localStorage.getItem('town.showsrc') === '1'; } catch {}
   setSrc(on0); tg.onclick = () => setSrc(!document.body.classList.contains('showsrc'));
+  document.getElementById('card').addEventListener('click', e => { if (e.target.id === 'card' || e.target.closest('.cclose')) closeCard(); });
   await refreshFileList(); await loadAssets(); makeChars(); await refresh();
   setInterval(refresh, CFG.refreshSeconds * 1000);
   window.__townReady = true;
