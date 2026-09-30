@@ -1029,5 +1029,9 @@
   "src": "../data/town-cards.json",
   "_readme": "建筑信息卡数据，由 scripts/build_town_cards.py 生成（publish_town.sh 会自动重跑）"
  },
+ "dailyFillCap": {
+  "value": 10,
+  "_note": "第 11 条每日成交笔数上限的唯一常量（用户 2026-09-30 23:48 北京提高到 10）。删掉 value 则回退读取 RULES.md「每天最多 N 笔」。"
+ },
  "dataBundle": "data/town-data.json"
 }
