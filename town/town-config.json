@@ -1018,5 +1018,12 @@
   "name": "Trading Hub",
   "subtitle": "Trading Hub · 只读看板（本页不连接交易所）"
  },
+ "rants": {
+  "src": "../data/rants.json",
+  "cardCycleSeconds": 9,
+  "bubbleEverySeconds": 11,
+  "bubbleSeconds": 7,
+  "_readme": "吐槽墙：卡片每 cardCycleSeconds 秒换一条（各 bot 错开）；小镇里每 bubbleEverySeconds 秒让一个在场角色冒一次气泡"
+ },
  "dataBundle": "data/town-data.json"
 }

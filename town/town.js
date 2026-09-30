@@ -234,6 +234,7 @@ async function refresh() {
   if (meet) startMeeting(meet, fill || null);
   else if (fill) startTradeRun(fill);
   STATE.firstLoad = false;
+  await loadRants();
   if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每天 08:44 快照后及每笔真实成交后重新发布）`;
   renderPanels(); renderFeed();
 }
@@ -314,6 +315,60 @@ function updateChars(dt, now) {
     c.x += dx / dist * s; c.y += dy / dist * s;
     c.face = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
   }
+}
+
+
+/* ---------- 摸鱼角 · 吐槽墙（data/rants.json，改数据不改代码） ---------- */
+let RANTS = null, RANT_SIG = '', RANT_BUBBLE = null, rantTimers = [];
+async function loadRants() {
+  if (!CFG.rants) return;
+  const r = await fetchJSON(CFG.rants.src); if (!r || !Array.isArray(r.rants)) return;
+  const sig = JSON.stringify(r); if (sig === RANT_SIG) return; RANT_SIG = sig; RANTS = r; renderRantWall();
+}
+const rantsOf = bot => (RANTS?.rants || []).filter(x => x.bot === bot && x.text);
+function renderRantWall() {
+  const wrap = document.getElementById('rants'); if (!wrap || !RANTS) return;
+  rantTimers.forEach(clearInterval); rantTimers = [];
+  document.getElementById('rantMeta').textContent = RANTS.updated ? `更新于 ${RANTS.updated}` : '';
+  const bots = Object.entries(RANTS.bots || {}).filter(([k]) => rantsOf(k).length);
+  wrap.innerHTML = bots.map(([k, b]) => {
+    const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color)}">${esc(b.badge || b.name[0])}</div>`;
+    return `<div class="rant" data-bot="${esc(k)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(b.name)} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
+  }).join('');
+  const cyc = (CFG.rants.cardCycleSeconds || 9) * 1000;
+  wrap.querySelectorAll('.rant').forEach((el, i) => {
+    const list = rantsOf(el.dataset.bot); let n = Math.floor(Math.random() * list.length);
+    const show = () => { const t = el.querySelector('.rt'), d = el.querySelector('.rd'); t.classList.add('fade'); setTimeout(() => { const x = list[n++ % list.length]; t.textContent = `“${x.text}”`; d.textContent = `${x.date || ''} · ${(n - 1) % list.length + 1}/${list.length}`; t.classList.remove('fade'); }, 350); };
+    show(); setTimeout(() => rantTimers.push(setInterval(show, cyc)), i * 1300); // 错开换条
+    el.onclick = show;
+  });
+}
+function tickBubble(now) {
+  if (!RANTS || !CFG.rants) return;
+  if (RANT_BUBBLE && now < RANT_BUBBLE.until) return;
+  if (RANT_BUBBLE && now < RANT_BUBBLE.until + (CFG.rants.bubbleEverySeconds - CFG.rants.bubbleSeconds) * 1000) return;
+  const cand = chars.filter(c => !c.hidden && rantsOf(c.role).length && c.mode !== 'meeting' && !(c.role === 'trader' && fx.trade));
+  if (!cand.length) return;
+  const c = cand[Math.floor(Math.random() * cand.length)], l = rantsOf(c.role);
+  RANT_BUBBLE = { c, text: l[Math.floor(Math.random() * l.length)].text, until: now + CFG.rants.bubbleSeconds * 1000 };
+}
+function wrapText(s, max) { const out = []; let cur = ''; for (const ch of s) { cur += ch; if (cur.length >= max && /[，。、！？：；,.!?)\s]/.test(ch)) { out.push(cur); cur = ''; } else if (cur.length >= max + 4) { out.push(cur); cur = ''; } } if (cur) out.push(cur); return out.slice(0, 5); }
+function drawBubble(now) {
+  const b = RANT_BUBBLE; if (!b || now > b.until || b.c.hidden) return;
+  const lines = wrapText(b.text, 11), lh = 28; ctx.font = `${FONT ? 24 : 20}px ${FONT}"Noto Sans CJK SC",sans-serif`;
+  const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 20, h = lines.length * lh + 12;
+  let x = X(b.c.x) - w / 2, y = X(b.c.y - 30) - h - 14; x = Math.max(4, Math.min(W - w - 4, x)); if (y < 4) y = X(b.c.y) + 12;
+  const px = (a, b2, c2, d, col) => { ctx.fillStyle = col; ctx.fillRect(Math.round(a), Math.round(b2), Math.round(c2), Math.round(d)); };
+  px(x - 2, y - 2, w + 4, h + 4, '#1a1423'); px(x, y, w, h, '#f4ecd8'); px(x, y + h - 3, w, 3, '#d8ccb0');
+  const tx = Math.max(x + 8, Math.min(x + w - 16, X(b.c.x) - 4)); px(tx, y + h + 2, 8, 4, '#1a1423'); px(tx + 2, y + h, 4, 4, '#f4ecd8'); px(tx + 2, y + h + 4, 4, 4, '#1a1423');
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#1a1423';
+  lines.forEach((l, i) => ctx.fillText(l, x + 10, y + 6 + lh / 2 + i * lh));
+}
+function drawRantSign() { // 海滩上的「摸鱼角」小牌子
+  const s = CFG.rants?.sign || [322, 304]; const x = X(s[0]), y = X(s[1]);
+  ctx.fillStyle = '#1a1423'; ctx.fillRect(x - 44, y - 12, 88, 24); ctx.fillStyle = '#2b2433'; ctx.fillRect(x - 42, y - 10, 84, 20); ctx.fillStyle = '#d9a21b'; ctx.fillRect(x - 42, y - 10, 84, 2);
+  ctx.fillStyle = '#6b4a2a'; ctx.fillRect(x - 3, y + 12, 6, 14);
+  text('☕ 摸鱼角', x, y + 1, '#f5d44a', 12);
 }
 
 /* ---------- 绘制 ---------- */
@@ -414,7 +469,9 @@ function frame(nowT) {
   for (const k of Object.keys(CFG.layout.buildings)) items.push({ y: CFG.layout.buildings[k].bottom, d: () => drawBuilding(k, t) });
   for (const d of CFG.layout.decor) items.push({ y: d.bottom, d: () => drawDecor(d) });
   for (const c of chars) items.push({ y: c.y + 4, d: () => drawChar(c, t) });
+  items.push({ y: (CFG.rants?.sign || [322, 304])[1] + 26, d: drawRantSign });
   items.sort((a, b) => a.y - b.y).forEach(o => o.d());
+  tickBubble(Date.now()); drawBubble(Date.now());
   for (const l of CFG.layout.sideLabels || []) { const off = l.district === 'crypto' && !STATE.crypto.hasData; text(l.text + (off ? '（待接入）' : ''), X(l.x), X(l.y), off ? '#a7a9b8' : '#fff1a8'); }
   document.getElementById('clock').textContent = new Date().toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai' }) + ' 北京时间';
   requestAnimationFrame(frame);
@@ -504,6 +561,7 @@ function showDetail(k) {
 }
 cv.addEventListener('click', ev => {
   const r = cv.getBoundingClientRect(), x = (ev.clientX - r.left) * W / r.width / S, y = (ev.clientY - r.top) * H / r.height / S;
+  { const sg = CFG.rants?.sign || [322, 304]; if (Math.abs(x - sg[0]) < 24 && Math.abs(y - sg[1]) < 16) return document.getElementById('rantwall').scrollIntoView({ behavior: 'smooth' }); }
   for (const k of Object.keys(CFG.layout.buildings)) { const b = B(k); if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) return showDetail(k); }
 });
 (async function main() {

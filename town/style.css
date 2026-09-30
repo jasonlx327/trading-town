@@ -86,3 +86,19 @@ table.pos tr.srcrow td{font-size:13px;color:#9a97a8}
 @media (max-width:760px){header{flex-wrap:wrap;gap:6px}.banner{order:3;flex:1 1 100%;font-size:14px}.title .sub{display:block}
   main{padding:8px}.feedwrap{margin:0 8px 12px}.ledgers{grid-template-columns:1fr}}
 table.pos small{font-size:12px;color:#aaa}
+/* ---- 摸鱼角 · 吐槽墙 ---- */
+.rantwall{margin-top:14px;background:#2b2433;border:3px solid #1a1423;box-shadow:inset 0 0 0 2px #d9a21b,0 4px 0 #1a1423;padding:12px 14px}
+.rantwall h3{margin:0 0 10px;font-size:20px;color:#f5d44a;text-shadow:2px 2px 0 #1a1423}
+.rantwall h3 .muted{font-size:13px;text-shadow:none}
+.rants{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rant{display:flex;gap:10px;align-items:flex-start;background:#f4ecd8;color:#1a1423;border:3px solid #1a1423;box-shadow:inset 0 -3px 0 #d8ccb0,inset 4px 0 0 var(--c);padding:8px 10px 10px 12px;cursor:pointer;min-height:112px}
+.rant .av{flex:0 0 64px;width:64px;height:64px;background-size:512px 256px;background-position:0 0;image-rendering:pixelated;background-color:#e6dcc2;border:2px solid #1a1423}
+.rant .av.badge{display:flex;align-items:center;justify-content:center;color:#1a1423;font-size:28px;font-weight:900}
+.rant .rb{min-width:0;flex:1}
+.rant .rn{font-weight:800;font-size:16px;color:var(--c);filter:brightness(.8)}
+.rant .rn small{font-size:11px;color:#6b6272;letter-spacing:1px;margin-left:4px}
+.rant .rt{font-size:16px;line-height:1.5;margin-top:3px;transition:opacity .35s}
+.rant .rt.fade{opacity:0}
+.rant .rd{font-size:12px;color:#8a8070;margin-top:4px}
+@media (max-width:1500px){.rants{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){.rants{grid-template-columns:1fr}.rant{min-height:0}.rant .av{flex-basis:48px;width:48px;height:48px;background-size:384px 192px}.rantwall{padding:10px}}
