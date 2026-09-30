@@ -2,20 +2,20 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>Trading 小镇 · 纸上交易团队</title>
+<title>Trading 小镇 · 交易团队</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="title">TRADING 小镇 <span class="sub">纸上交易团队 · Paper Trading Town</span></div>
+  <div class="title">TRADING 小镇 <span class="sub">交易团队 · Trading Town</span></div>
   <div class="banner">只读看板 · 本页不连接交易所、不含任何 Key、不下单 · 数据来自团队日志与账户快照</div>
   <div class="clock" id="clock">—</div>
 </header>
 <main>
   <section class="stage">
     <canvas id="town" width="1280" height="720"></canvas>
-    <div class="legend">点击建筑查看详情 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新</div>
+    <div class="legend">点击建筑查看详情 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新<span id="dataGen"></span></div>
   </section>
   <aside>
     <div class="panel" id="panel-us"></div>

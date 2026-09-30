@@ -234,6 +234,7 @@ async function refresh() {
   if (meet) startMeeting(meet, fill || null);
   else if (fill) startTradeRun(fill);
   STATE.firstLoad = false;
+  if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每天 08:44 快照后及每笔真实成交后重新发布）`;
   renderPanels(); renderFeed();
 }
 
