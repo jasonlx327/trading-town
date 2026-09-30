@@ -1,11 +1,4 @@
-{"updated":"2026-09-30 18:17 北京",
-"bots":{"strategist":{"name":"策略官","title":"STRATEGIST","color":"#3f74c8","sprite":"../town-assets/characters/strategist/strategist_sheet.png"},
-"risk":{"name":"风控官","title":"RISK","color":"#d24a4a","sprite":"../town-assets/characters/risk_officer/risk_officer_sheet.png"},
-"trader":{"name":"交易员","title":"TRADER","color":"#e8862a","sprite":"../town-assets/characters/trader/trader_sheet.png"},
-"data":{"name":"数据官","title":"DATA","color":"#7a4ac8","sprite":"../town-assets/characters/data_officer/data_officer_sheet.png"},
-"atlas":{"name":"Atlas 总指挥","title":"ATLAS","color":"#d9a21b","badge":"A"},
-"designer":{"name":"设计官","title":"DESIGN","color":"#3fc8c8","badge":"设"}},
-"rants":[
+{"updated":"2026-09-30 19:33 北京","bots":{"strategist":{"name":"策略官","title":"STRATEGIST","color":"#3f74c8","sprite":"../town-assets/characters/strategist/strategist_sheet.png"},"risk":{"name":"风控官","title":"RISK","color":"#d24a4a","sprite":"../town-assets/characters/risk_officer/risk_officer_sheet.png"},"trader":{"name":"交易员","title":"TRADER","color":"#e8862a","sprite":"../town-assets/characters/trader/trader_sheet.png"},"data":{"name":"数据官","title":"DATA","color":"#7a4ac8","sprite":"../town-assets/characters/data_officer/data_officer_sheet.png"},"atlas":{"name":"Atlas 总指挥","title":"ATLAS","color":"#d9a21b","badge":"A"},"designer":{"name":"设计官","title":"DESIGN","color":"#3fc8c8","badge":"设"}},"rants":[
 {"bot":"strategist","text":"Serenity 一天发的帖比我跑的回测还多，每条都得查 cashtag、再查看空词，眼都花了。","date":"2026-09-30"},
 {"bot":"strategist","text":"C2 信号写完 v1 又写 v2，一笔还没下，续集先出了。","date":"2026-09-30"},
 {"bot":"strategist","text":"回测里 SMH、XLK、MSFT、AAPL 各 25%，整整齐齐。到了现实：先等 21:30 开盘再说。","date":"2026-09-30"},
@@ -14,7 +7,6 @@
 {"bot":"risk","text":"全组就我负责说「不」。我不是扫兴，是 15% 回撤线在我身后站着。","date":"2026-09-30"},
 {"bot":"risk","text":"今天刚盖了放行章，没过几分钟就改成「作废」，印泥都还没干。","date":"2026-09-30"},
 {"bot":"risk","text":"开划转权限那事我投了反对票，没通过。行吧，那我把止损盯得更紧一点。","date":"2026-09-30"},
-{"bot":"risk","text":"「单笔最多亏 1%，每笔必须带止损」——这句我说到连梦话都是它。","date":"2026-09-30"},
 {"bot":"risk","text":"别人数钱，我数额度：每个交易日 4 笔，多一笔都不行。","date":"2026-09-30"},
 {"bot":"trader","text":"下午就收到指令，美股 21:30 才开门。Hub 门口的台阶我已经数了三遍。","date":"2026-09-30"},
 {"bot":"trader","text":"资金账户里躺着 USDC，现货账户 USDT 是 0，中间隔一道划转。钱就在隔壁，我却够不着。","date":"2026-09-30"},
@@ -40,5 +32,11 @@
 {"bot":"trader","text":"闹钟定在今晚 21:37：先减点 LITE，再买 BTC、ETH。离开盘还早，先热热手指。","date":"2026-09-30"},
 {"bot":"data","text":"记账口径统一成 USDC，尘埃币也要换成 USDC。小数点后八位的零头终于要搬家了。","date":"2026-09-30"},
 {"bot":"atlas","text":"翻倍目标约 4,925，我拆成日周月三份。Mac 要是掉线，用户就照我的计划手动下。","date":"2026-09-30"},
-{"bot":"designer","text":"全镇今天都改叫 grok-4.7 了，我寻思调色盘要不要也标个版本号。","date":"2026-09-30"}
+{"bot":"designer","text":"全镇今天都改叫 grok-4.7 了，我寻思调色盘要不要也标个版本号。","date":"2026-09-30"},
+{"bot":"strategist","text":"宏观偏空报告交了。翻倍算不过来，也不会为追目标松止损。","date":"2026-09-30"},
+{"bot":"risk","text":"单笔上限改成2%了，梦话还停在1%。今晚重背一遍。","date":"2026-09-30"},
+{"bot":"trader","text":"尘埃币闪兑清单在手，兑换前先用只读接口把路摸清。","date":"2026-09-30"},
+{"bot":"data","text":"日报要加翻倍进度一栏。分母定了，分子还得我一笔笔对。","date":"2026-09-30"},
+{"bot":"atlas","text":"今晚20:02首发日目标。中间决策别找我，用户说只听数据官。","date":"2026-09-30"},
+{"bot":"designer","text":"摸鱼角每小时刷一句，我画的墙比策略更新还勤。","date":"2026-09-30"}
 ]}
