@@ -138,3 +138,4 @@ table.pos small{font-size:12px;color:#aaa}
 body.cardopen{overflow:hidden}
 @media (max-width:760px){.cardwrap{align-items:flex-end;padding:0}.card{width:100%;max-height:88vh;border-width:3px;box-shadow:0 0 0 3px #d9a21b;padding:14px 14px 18px}
   .chead h2{font-size:21px}.cr{grid-template-columns:6.2em 1fr}.rules{grid-template-columns:1fr}}
+.na{color:#f5a742}.na-r{color:#c9a77a;font-weight:normal}.pos tr.tot td{border-top:1px solid #555;font-weight:bold}

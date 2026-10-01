@@ -21,7 +21,8 @@
     "snapshotGlobs": {
      "funding": "../data/funding-snapshot-",
      "account": "../data/account-snapshot-"
-    }
+    },
+    "panelData": "../data/us-panel.json"
    },
    "placeholderLabel": "暂无日志记录"
   },
@@ -30,7 +31,8 @@
    "sources": {
     "tradeLog": "../logs/crypto-trade-log.csv",
     "heartbeat": "../logs/crypto-heartbeat.csv",
-    "haltFlag": "../logs/halt.flag"
+    "haltFlag": "../logs/halt.flag",
+    "panelData": "../data/us-panel.json"
    },
    "placeholderLabel": "待接入数据 / 纸上研究",
    "hideVisualsWithoutData": true
@@ -391,7 +393,7 @@
   "durationSeconds": 16
  },
  "baseline": {
-  "_comment": "起始资产，来自真实记录，不是估算",
+  "_comment": "旧面板字段：2,489.57 是回测起始资金（截图市值），不是翻倍基数。新面板用 data/us-panel.json 的 base（RULES.md 约 2,462）",
   "equity_usd": 2489.57,
   "as_of_cst": "2026-09-30 00:11",
   "source": "backtest-report.md「起始 2,489.57 USD」= holdings-baseline.csv 截图市值 LITE≈1,286 + TSLA≈1,203.57",
@@ -456,7 +458,9 @@
   "earningsWindowDays": {
    "confirmed": 2,
    "estimated": 5
-  }
+  },
+  "bundleStaleMinutes": 135,
+  "_bundleStale": "公开版：数据包超过 135 分钟未更新（Mac 每 30 分钟刷新、无变化时最多 2 小时强制推送一次）即标记过期"
  },
  "decision": {
   "approveKeywords": [
@@ -1032,6 +1036,19 @@
  "dailyFillCap": {
   "value": 10,
   "_note": "第 11 条每日成交笔数上限的唯一常量（用户 2026-09-30 23:48 北京提高到 10）。删掉 value 则回退读取 RULES.md「每天最多 N 笔」。"
+ },
+ "periodStart": {
+  "as_of": "2026-09-29 美东收盘（= 9/30 北京凌晨，翻倍基数日）",
+  "prices": {
+   "LITE": 973.49,
+   "TSLA": 352.84,
+   "SPY": 764.2
+  },
+  "qty": {
+   "LITE": 1.3003,
+   "TSLA": 3.3911
+  },
+  "src": "Yahoo Finance 日线 9/29 收盘（2026-10-01 09:40 北京取数；LITE/TSLA 与 equity-hwm.csv 9/30 16:45 行同口径）；股数 = holdings-baseline.csv"
  },
  "dataBundle": "data/town-data.json"
 }

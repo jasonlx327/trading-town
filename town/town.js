@@ -192,7 +192,75 @@ async function loadDistrict(id) {
   d.spyRet = spy.length >= 2 ? num(spy[spy.length - 1].last_price) / num(spy[0].last_price) - 1 : null;
   d.spySrc = spy.length ? `heartbeat.csv SPY ${spy[0].ts_cst} → ${spy[spy.length - 1].ts_cst}` : '心跳无 SPY 行';
   d.visuals = d.hasData || !CFG.districts[id].hideVisualsWithoutData;
+  d.P = null;
+  if (src.panelData) { const P = await fetchJSON(src.panelData); if (P && P.schema === 1) applyPanel(d, id, P); }
   return d;
+}
+/* ---------- Mac 导出的面板数据 data/us-panel.json（合并快照估值 + 止损监控心跳 + 日志计数；每个数字带来源/时间） ---------- */
+function applyPanel(d, id, P) {
+  d.P = P; d.hasData = true; d.visuals = true;
+  const gen = new Date(P.generated_at), bundleAge = (Date.now() - gen.getTime()) / 60000, hb = P.heartbeat || {}, why = [];
+  if (id === 'us') {
+    if (!hb.ok) why.push('止损监控心跳不可用：' + (hb.reason || '原因未知'));
+    else if (hb.age_min_at_export > CFG.data.staleMinutes) why.push(`导出时止损监控心跳已 ${Math.round(hb.age_min_at_export)} 分钟未更新`);
+    if (hb.ok && String(hb.ip_ok).toLowerCase() !== 'true') why.push('止损监控出口 IP 校验未通过');
+    if (hb.alerts && hb.alerts.toLowerCase() !== 'none') why.push('止损监控告警: ' + hb.alerts);
+  }
+  if (!P.snapshot || !P.snapshot.ok) why.push('没有可用的账户快照');
+  else { const sa = (gen.getTime() - new Date(P.snapshot.taken_at).getTime()) / 60000; if (sa > 45) why.push(`账户快照已 ${Math.round(sa)} 分钟未更新`); }
+  if (bundleAge > (CFG.data.bundleStaleMinutes || 135)) why.push(`公开数据包已 ${Math.round(bundleAge)} 分钟未更新`);
+  d.stale = why.length > 0; d.staleReason = why.join('；');
+  if (id === 'us') {
+    d.equity = P.equity?.value ?? null; d.cumRet = P.cumRet?.value ?? null;
+    d.dd = P.drawdown?.value ?? null; d.tier = d.dd == null ? null : [...CFG.risk.drawdownTiers].reverse().find(t => d.dd >= t.min);
+    if (d.dd != null && d.dd >= CFG.risk.hardStopDrawdown && !d.riskHalt) { d.riskHalt = true; d.riskHaltReason = `回撤 ≥${CFG.risk.hardStopDrawdown}% 全面停止`; }
+    const dp = P.dayPnl?.value; if (dp != null && dp <= CFG.risk.dailyHalt.dailyLossPct && !d.dailyHalt) { d.dailyHalt = true; d.dailyHaltReason = `今日亏损 ${dp}%`; }
+  }
+}
+const UNAV = r => `<span class="na">不可用</span>${r ? `<small class="na-r">（${esc(r)}）</small>` : ''}`;
+const bjT2 = s => s ? hhmm(new Date(s)) : '';
+function panelHTML(id, d, st) {
+  const P = d.P, S = P.snapshot || {}, sT = bjT2(S.taken_at), hb = P.heartbeat || {};
+  let h = '';
+  if (id === 'us') {
+    const E = P.equity || {}, B = P.base || {}, Hw = P.hwm || {}, O = P.ordersToday || {};
+    h += '<div class="sec">账户总览 <span class="muted">（整个币安账户：现货+资金账户，买一价估值）</span></div>';
+    h += row('总资产 USD', E.value != null ? fmt(E.value) : UNAV(E.reason), E.src || '—', sT, st);
+    h += row('翻倍基数（起始）USD', B.value != null ? `${fmt(B.value)} <small>→ 目标 ${fmt(B.target, 0)}</small>` : UNAV(B.reason), B.src || '—', B.date ? B.date + ' 北京' : '');
+    h += row('历史高点 HWM USD', Hw.value != null ? fmt(Hw.value) : UNAV('账本无高点'), Hw.src || '—', '');
+    h += row('累计收益', P.cumRet?.value != null ? pct(P.cumRet.value) : UNAV('缺总资产或基数'), P.cumRet?.src, sT, st);
+    h += row('当前回撤', d.dd == null ? UNAV('缺总资产或高点') : fmt(d.dd, 2, '%') + (d.tier ? ` <span style="color:${d.tier.color}">●${esc(d.tier.label)}</span>` : ''), P.drawdown?.src, sT, st);
+    h += row('今日盈亏', P.dayPnl?.value != null ? fmt(P.dayPnl.value, 2, '%') : UNAV(P.dayPnl?.reason), P.dayPnl?.src || '—', sT, st);
+    h += row('今日计数订单', `${O.value ?? 0}${O.cap ? ' / ' + O.cap : ''}`, `${O.src} · 窗口 ${O.window}${O.list?.length ? ' · ' + O.list.join('，') : ''} · 日志最新一行 ${O.lastLogRow || '—'}${O.feedStamp ? ' · 日志同步 ' + O.feedStamp : ''}`, '');
+    const tk = Object.entries(hb.tickers || {}).map(([k, v]) => `${k} 买一 ${v.bid ?? '—'} / 止损 ${v.stop ?? '—'}`).join('；');
+    h += row('止损监控', hb.ok ? `${esc(hb.mode || '')} · 监控 ${hb.n_monitored ?? '—'} 只 · 心跳 ${esc(bjT2(hb.ts))}` : UNAV(hb.reason), `${hb.src || 'heartbeat.csv'}${tk ? ' · ' + tk : ''}${hb.ok ? ` · 导出时 ${hb.age_min_at_export} 分钟前 · ${hb.columns} 列` : ''}`, bjT2(hb.ts), st);
+    h += row('回测起始资金（非基数）', fmt(P.backtestStart?.value), P.backtestStart?.src, '');
+    const C = P.compare || {};
+    h += `<div class="sec">对比（同一起点 ${esc(C.start || '')}）</div>`;
+    h += row('本策略（账户）', C.strategy?.value != null ? pct(C.strategy.value) : UNAV('缺总资产'), C.strategy?.src, sT, st);
+    h += row('什么都不做(持有 LITE/TSLA)', C.hold?.value != null ? `${pct(C.hold.value)} <small>${fmt(C.hold.startValue)} → ${fmt(C.hold.nowValue)}</small>` : UNAV(C.hold?.reason), C.hold?.src, sT, st);
+    h += row('SPY', C.spy?.value != null ? pct(C.spy.value) : UNAV(C.spy?.reason), C.spy?.src || 'Yahoo Finance', bjT2(C.spy?.now_ts), st);
+    h += '<div class="sec">持仓（股票代币）</div><table class="pos"><tr><th>标的</th><th>股数</th><th>买一</th><th>市值</th><th>期间盈亏</th><th>价差</th><th>止损</th></tr>';
+    for (const p of P.positions || []) {
+      const pnl = p.periodPnl != null ? fmt(p.periodPnl) : UNAV('缺价格');
+      h += `<tr class="${st ? 'stale' : ''}"><td>${esc(p.tk)}</td><td title="${esc(p.qty_src)}">${p.qty != null ? fmt(p.qty, 4) : UNAV(p.qty_src)}</td><td title="${esc(p.px_src || '')}">${p.px != null ? fmt(p.px) : UNAV('无报价')}</td><td>${p.value != null ? fmt(p.value) : '—'}</td><td>${pnl}</td><td>${p.spreadPct == null ? '—' : fmt(p.spreadPct, 3, '%')}</td><td>${p.stop != null ? fmt(p.stop) : '—'}</td></tr>`;
+      h += `<tr class="srcrow"><td colspan="7">股数: ${esc(p.qty_src)}${p.held_monitor != null ? ` · 监控 held ${p.held_monitor}` : ''} · 价格: ${esc(p.px_src || '—')} ${esc(sT)}${p.monitor_bid != null ? ` · 监控买一 ${p.monitor_bid} @${esc(bjT2(p.monitor_ts))}` : ''} · 期间盈亏 = (买一 − 起点价 ${p.startPx ?? '—'}) × 股数（${esc(p.startSrc || '')}）${p.periodRealized != null ? ` · 期间已卖出部分 ${fmt(p.periodRealized)}` : ''} · ${esc(p.cost_reason || '')}</td></tr>`;
+    }
+    h += '</table>';
+  } else {
+    const Cr = P.crypto || {};
+    h += `<div class="sec">持仓（加密，与美股同一份快照 ${esc(sT)}）</div><table class="pos"><tr><th>币</th><th>数量</th><th>买一</th><th>市值</th><th>止损</th></tr>`;
+    for (const p of Cr.positions || []) h += `<tr class="${st ? 'stale' : ''}"><td>${esc(p.tk)}</td><td>${p.qty != null ? fmt(p.qty, 8) : UNAV('快照无')}</td><td title="${esc(p.px_src || '')}">${p.px != null ? fmt(p.px) : '—'}</td><td>${p.value != null ? fmt(p.value) : '—'}</td><td title="${esc(p.stopSrc)}">${p.stop != null ? fmt(p.stop) + ' <small>' + esc(p.stopStatus || '') + '</small>' : UNAV(p.stopSrc)}</td></tr>`;
+    h += `</table><div class="muted">${esc(Cr.src || '')}</div>`;
+  }
+  if (S.ok) {
+    h += `<div class="sec">最新账户快照（现货+资金账户合并） <span class="muted">${esc(sT)} 北京</span></div><table class="pos"><tr><th>资产</th><th>现货</th><th>资金</th><th>合计</th><th>买一</th><th>市值</th></tr>`;
+    const q = v => v ? fmt(v, v < 1 ? 6 : 4) : '—';
+    h += S.items.map(it => `<tr><td title="${esc(it.symbols.join(' + '))}">${esc(it.asset)}${it.stock ? ' <small>股票代币</small>' : ''}</td><td>${q(it.spot)}</td><td>${q(it.funding)}</td><td>${q(it.qty)}</td><td title="${esc(it.px_src)}">${it.px != null ? fmt(it.px, it.px < 10 ? 4 : 2) : UNAV('无报价')}</td><td>${it.value != null ? fmt(it.value) : '—'}</td></tr>`).join('');
+    h += `<tr class="tot"><td colspan="5">合计（总资产）</td><td>${fmt(S.total)}</td></tr></table>`;
+    h += `<div class="muted">${esc(S.src)}${S.unpriced?.length ? ' · 未计价: ' + esc(S.unpriced.join(', ')) : ''} · 面板数据导出于 ${esc(bjT2(P.generated_at))} 北京</div>`;
+  } else h += `<div class="sec">最新账户快照</div>${UNAV('Mac 没有可用快照')}`;
+  return h;
 }
 
 /* ---------- 事件 ---------- */
@@ -506,6 +574,7 @@ function renderPanels() {
       h += `<div class="muted">加密货币纸上交易数据尚未产生 — 不显示交易动画。<br>等待 ${esc(short(dc.sources.tradeLog))}（与 trade-log.csv 同列）· 检查于 ${chk}</div>`;
       el.innerHTML = h; continue;
     }
+    if (d.P) { h += panelHTML(id, d, st) + '<div class="ledgers">' + ledgerHTML('纸上账本 PAPER', d.paper, st) + ledgerHTML('实盘账本 LIVE', d.live, st) + '</div>'; el.innerHTML = h; continue; }
     const B = CFG.baseline;
     h += '<div class="sec">账户总览</div>';
     h += row('总资产 USD', fmt(d.equity), hbSrc + ' equity_usd', hbT || `检查 ${chk}`, st);
