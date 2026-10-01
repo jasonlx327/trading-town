@@ -89,7 +89,8 @@ function decisionOf(r) {
   if (kwMatch(d, CFG.decision.approveKeywords)) return 'approved';
   return 'pending';
 }
-const isLive = r => kwMatch(r.mode, CFG.ledger.liveModeKeywords);
+// 实盘判定：mode 含 live/实盘，或团队真实日志里的 auto/full_auto（真实币安成交）；paper/纸上/dry/sim 一律纸上
+const isLive = r => !kwMatch(r.mode, CFG.ledger.paperModeKeywords || ['paper', '纸上', 'dry', 'sim']) && (kwMatch(r.mode, CFG.ledger.liveModeKeywords) || kwMatch(r.mode, ['auto']) || kwMatch(r.user_confirmed, ['full_auto']));
 const isFill = r => (num(r.filled_qty) || 0) > 0;
 const isCountedFill = r => isFill(r) && !kwMatch(r.type, ['convert', 'dust', 'transfer', '兑换', '划转']) && !kwMatch(r.order_kind, ['stop', '止损', 'convert', 'dust']) && String(r.counts_toward_daily_cap || '').trim().toLowerCase() !== 'no';
 const isPreauthStop = r => !!r.preauth_stop_price || kwMatch(r.order_kind, ['stop', '止损']) || kwMatch(r.type, ['stop', '止损']);
@@ -97,7 +98,8 @@ function ledgerOf(rows, last) {
   const fills = rows.filter(isCountedFill);
   const closed = rows.filter(r => num(r.realized_pnl_usd) != null);
   const wins = closed.filter(r => num(r.realized_pnl_usd) > 0).length;
-  const fees = rows.reduce((s, r) => { const v = num(r.fee_in_quote) ?? num(r.fee); return v == null ? s : (s ?? 0) + v; }, null);
+  const stableFee = r => { const m = String(r.fee || '').trim().match(/^([\d.]+)\s*(USDC|USDT|FDUSD|USD)?$/i); if (!m) return null; const unit = (m[2] || r.fee_asset || r.quote_asset || '').toUpperCase(); return ['USDC', 'USDT', 'FDUSD', 'USD'].includes(unit) ? num(m[1]) : null; }; // 只合计稳定币计价的手续费；币本位手续费（BTC/ETH）不折算
+  const fees = rows.reduce((s, r) => { const v = num(r.fee_in_quote) ?? stableFee(r); return v == null ? s : (s ?? 0) + v; }, null);
   const realized = closed.reduce((s, r) => s + num(r.realized_pnl_usd), 0);
   const by = {};
   for (const r of closed) { const k = r.strategy_id || '(未标注)'; (by[k] ||= { n: 0, sum: 0, pctSum: 0, pctN: 0 }); by[k].n++; by[k].sum += num(r.realized_pnl_usd); const p = num(r.realized_pnl_pct_equity); if (p != null) { by[k].pctSum += p; by[k].pctN++; } }
@@ -554,9 +556,9 @@ document.addEventListener('click', e => { const r = e.target.closest && e.target
 function ledgerHTML(name, L, stale) {
   const t = L.lastTime || null, src = 'trade-log.csv';
   let h = `<div class="ledger"><h4>${name}</h4>` +
-    row('成交笔数', L.fills, src, t) + row('已平仓', L.closed, src, t) +
+    row('计数成交笔数', L.fills, src + '（第 11 条口径，止损/紧急/尘埃/划转不计）', t) + row('已平仓', L.closed, src, t) +
     row('胜率', L.winRate == null ? '—' : (L.winRate * 100).toFixed(1) + '%', src + ' realized_pnl_usd', t) +
-    row('总手续费', fmt(L.fees), src + ' fee', t) + row('已实现盈亏', fmt(L.realized), src, t);
+    row('总手续费(稳定币计)', fmt(L.fees), src + ' fee（只合计 USDC/USDT 计价；BTC/ETH 计价的手续费未折算）', t) + row('已实现盈亏', fmt(L.realized), src, t);
   const ks = Object.keys(L.byStrategy);
   h += ks.length ? ks.map(k => { const s = L.byStrategy[k]; return row(`期望/笔 ${esc(k)}`, `${fmt(s.sum / s.n)} USD${s.pctN ? ` (${fmt(s.pctSum / s.pctN, 3, '%')})` : ''} ×${s.n}`, src + ' strategy_id', t); }).join('') : row('每策略期望', '—', src + '（无平仓记录）', t);
   return h + '</div>';
