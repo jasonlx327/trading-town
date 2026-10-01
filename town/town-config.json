@@ -146,6 +146,18 @@
      32,
      78
     ]
+   },
+   "rumor": {
+    "src": "../town-assets/buildings/labeled/bld_rumor_tower_labeled.png",
+    "size": [
+     64,
+     80
+    ],
+    "door": [
+     34,
+     78
+    ],
+    "_comment": "流言塔（报刊亭+茶馆），town-assets/src/rumor_tower.py 生成"
    }
   },
   "characters": {
@@ -519,6 +531,10 @@
    "trader": {
     "x": 384,
     "bottom": 272
+   },
+   "rumor": {
+    "x": 58,
+    "bottom": 272
    }
   },
   "routes": {
@@ -685,11 +701,6 @@
    {
     "src": "../town-assets/buildings/unlabeled/bld_filler_shop_0.png",
     "x": 8,
-    "bottom": 272
-   },
-   {
-    "src": "../town-assets/buildings/unlabeled/bld_filler_us_office_1.png",
-    "x": 64,
     "bottom": 272
    },
    {
@@ -1027,7 +1038,7 @@
   "cardCycleSeconds": 9,
   "bubbleEverySeconds": 11,
   "bubbleSeconds": 7,
-  "_readme": "吐槽墙：卡片每 cardCycleSeconds 秒换一条（各 bot 错开）；小镇里每 bubbleEverySeconds 秒让一个在场角色冒一次气泡"
+  "_readme": "摸鱼角：每个 bot 只显示自己最新的一条（一 bot 一张卡）；小镇里每 bubbleEverySeconds 秒让一个在场角色冒一次气泡"
  },
  "cards": {
   "src": "../data/town-cards.json",
@@ -1049,6 +1060,11 @@
    "TSLA": 3.3911
   },
   "src": "Yahoo Finance 日线 9/29 收盘（2026-10-01 09:40 北京取数；LITE/TSLA 与 equity-hwm.csv 9/30 16:45 行同口径）；股数 = holdings-baseline.csv"
+ },
+ "rumor": {
+  "src": "data/rumors.json",
+  "watchlist": "data/rumor-watchlist.md",
+  "_readme": "流言官数据：本地版直接读 rumors/latest.json；公开版改为 town/data/rumors.json（每小时 job 与 Mac 30 分钟发布都会覆盖）"
  },
  "dataBundle": "data/town-data.json"
 }
