@@ -405,14 +405,19 @@ function renderRantWall() {
   const wrap = document.getElementById('rants'); if (!wrap || !RANTS) return;
   rantTimers.forEach(clearInterval); rantTimers = [];
   document.getElementById('rantMeta').textContent = RANTS.updated ? `更新于 ${RANTS.updated}` : '';
-  const bots = Object.entries(RANTS.bots || {}).filter(([k]) => rantsOf(k).length);
-  if (!bots.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; return; }
-  wrap.innerHTML = bots.map(([k, b]) => {
-    const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color)}">${esc(b.badge || b.name[0])}</div>`;
-    return `<div class="rant" data-bot="${esc(k)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(b.name)} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
+  const BOTS = RANTS.bots || {};
+  // 摸鱼角显示 rants.json 里的每一条（同一个 bot 可以有多条），按时间新→旧，最多 5 条
+  const list = (RANTS.rants || []).map((x, i) => ({ x, i })).filter(o => o.x && o.x.text && o.x.bot)
+    .sort((a, b) => { const ta = Date.parse(a.x.ts || '') || 0, tb = Date.parse(b.x.ts || '') || 0; return (tb - ta) || (b.i - a.i); })
+    .slice(0, 5).map(o => o.x);
+  if (!list.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; return; }
+  wrap.innerHTML = list.map(x => {
+    const b = BOTS[x.bot] || { name: String(x.bot) }, nm = b.name || String(x.bot);
+    const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(b.badge || nm[0])}</div>`;
+    return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(nm)} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
   }).join('');
-  wrap.querySelectorAll('.rant').forEach(el => {  // 每个 bot 只显示自己最新的一条
-    const x = latestRant(el.dataset.bot); if (!x) return;
+  wrap.querySelectorAll('.rant').forEach((el, i) => {
+    const x = list[i];
     el.querySelector('.rt').textContent = `“${x.text}”`;
     el.querySelector('.rd').textContent = x.ts ? bjT(x.ts) : (x.date || '');
   });
