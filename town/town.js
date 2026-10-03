@@ -410,7 +410,7 @@ function renderRantWall() {
   const list = (RANTS.rants || []).map((x, i) => ({ x, i })).filter(o => o.x && o.x.text && o.x.bot)
     .sort((a, b) => { const ta = Date.parse(a.x.ts || '') || 0, tb = Date.parse(b.x.ts || '') || 0; return (tb - ta) || (b.i - a.i); })
     .slice(0, 5).map(o => o.x);
-  if (!list.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; return; }
+  if (!list.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; rantAllUI(); return; }
   wrap.innerHTML = list.map(x => {
     const b = BOTS[x.bot] || { name: String(x.bot) }, nm = b.name || String(x.bot);
     const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(b.badge || nm[0])}</div>`;
@@ -421,6 +421,48 @@ function renderRantWall() {
     el.querySelector('.rt').textContent = `“${x.text}”`;
     el.querySelector('.rd').textContent = x.ts ? bjT(x.ts) : (x.date || '');
   });
+  rantAllUI(); if (RANT_ALL_OPEN) loadRantsAll();
+}
+/* 摸鱼角「展开全部 / 收起」：默认仍是最新 5 条；展开后按时间新→旧列出 data/rants-all.json 里的全部吐槽（多了可滚动） */
+let RANT_ALL_OPEN = false, RANTS_ALL = null;
+const rantAllSrc = () => CFG.rants?.allSrc || String(CFG.rants?.src || '').replace(/rants\.json(\?.*)?$/, 'rants-all.json');
+const rantCardHTML = (x, BOTS) => {
+  const b = BOTS[x.bot] || { name: String(x.bot) }, nm = b.name || String(x.bot);
+  const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(b.badge || nm[0])}</div>`;
+  return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(nm)} <small>${esc(b.title || '')}</small></div><div class="rt">“${esc(x.text)}”</div><div class="rd">${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</div></div></div>`;
+};
+function rantAllUI() {
+  const wrap = document.getElementById('rants'); if (!wrap) return;
+  let bar = document.getElementById('rantAllBar'), box = document.getElementById('rantsAll');
+  if (!bar) {
+    bar = document.createElement('div'); bar.id = 'rantAllBar'; bar.style.cssText = 'margin-top:10px;text-align:center';
+    bar.innerHTML = '<button type="button" id="rantAllBtn" style="font:inherit;font-size:14px;font-weight:800;cursor:pointer;background:#d9a21b;color:#1a1423;border:3px solid #1a1423;box-shadow:inset 0 -3px 0 #a87a10;padding:4px 14px">展开全部</button>';
+    box = document.createElement('div'); box.id = 'rantsAll'; box.className = 'rants'; box.style.display = 'none';
+    box.style.maxHeight = '70vh'; box.style.overflowY = 'auto'; box.style.paddingRight = '4px';
+    wrap.after(box); box.after(bar);
+    bar.querySelector('button').addEventListener('click', () => { RANT_ALL_OPEN = !RANT_ALL_OPEN; if (RANT_ALL_OPEN) loadRantsAll(); else showRantAll(); });
+  }
+  showRantAll();
+}
+async function loadRantsAll() {
+  const btn = document.getElementById('rantAllBtn'); if (btn && !RANTS_ALL) btn.textContent = '加载中…';
+  const r = await fetchJSON(rantAllSrc() + (rantAllSrc().includes('?') ? '&' : '?') + 't=' + Date.now());
+  if (r && Array.isArray(r.rants)) RANTS_ALL = r;
+  showRantAll();
+}
+function showRantAll() {
+  const wrap = document.getElementById('rants'), box = document.getElementById('rantsAll'), btn = document.getElementById('rantAllBtn'); if (!wrap || !box || !btn) return;
+  const all = (RANTS_ALL?.rants || []).map((x, i) => ({ x, i })).filter(o => o.x && o.x.text && o.x.bot)
+    .sort((a, b) => { const ta = Date.parse(a.x.ts || '') || 0, tb = Date.parse(b.x.ts || '') || 0; return (tb - ta) || (a.i - b.i); }).map(o => o.x);
+  if (RANT_ALL_OPEN && RANTS_ALL) {
+    const BOTS = { ...(RANTS?.bots || {}), ...(RANTS_ALL.bots || {}) };
+    box.innerHTML = all.length ? all.map(x => rantCardHTML(x, BOTS)).join('') : '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>';
+    box.style.display = ''; wrap.style.display = 'none'; btn.textContent = `收起（共 ${all.length} 条）`;
+  } else {
+    if (RANT_ALL_OPEN && !RANTS_ALL) { btn.textContent = '暂时读不到全部吐槽，点此重试'; RANT_ALL_OPEN = false; }
+    else btn.textContent = RANTS_ALL ? `展开全部（${all.length} 条）` : '展开全部';
+    box.style.display = 'none'; wrap.style.display = '';
+  }
 }
 const latestRant = bot => { const l = rantsOf(bot); return l.length ? l[l.length - 1] : null; };
 function tickBubble(now) {
