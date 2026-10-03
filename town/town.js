@@ -406,6 +406,7 @@ function renderRantWall() {
   rantTimers.forEach(clearInterval); rantTimers = [];
   document.getElementById('rantMeta').textContent = RANTS.updated ? `更新于 ${RANTS.updated}` : '';
   const bots = Object.entries(RANTS.bots || {}).filter(([k]) => rantsOf(k).length);
+  if (!bots.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; return; }
   wrap.innerHTML = bots.map(([k, b]) => {
     const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color)}">${esc(b.badge || b.name[0])}</div>`;
     return `<div class="rant" data-bot="${esc(k)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(b.name)} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
