@@ -1041,7 +1041,7 @@
   "_readme": "摸鱼角：每个 bot 只显示自己最新的一条（一 bot 一张卡）；小镇里每 bubbleEverySeconds 秒让一个在场角色冒一次气泡"
  },
  "cards": {
-  "src": "../data/town-cards.json",
+  "src": "data/town-cards.json",
   "_readme": "建筑信息卡数据，由 scripts/build_town_cards.py 生成（publish_town.sh 会自动重跑）"
  },
  "dailyFillCap": {

@@ -681,7 +681,14 @@ function rumorData() { // 优先用每小时直接覆盖的 town/data/rumors.jso
   if (CARDS?.rumor && !CARDS.rumor.error) return { ...CARDS.rumor, src: 'town-cards.json（rumors/latest.json 副本）' };
   return CARDS?.rumor?.error ? { error: CARDS.rumor.error } : null;
 }
-async function loadCards() { if (CFG.cards) { const c = await fetchJSON(CFG.cards.src); if (c) CARDS = c; } }
+async function loadCards() {
+  if (!CFG.cards) return;
+  let c = await fetchJSON(CFG.cards.src);
+  if (!c && BUNDLE?.files?.['data/town-cards.json']) {  // 公开版兜底：单独文件缺失/损坏时从数据包取
+    try { c = JSON.parse(BUNDLE.files['data/town-cards.json']); } catch (_) {}
+  }
+  if (c) CARDS = c;
+}
 const NA = '暂无';
 const bjNow = () => new Date(Date.now() + 8 * 3600e3); // 用 UTC 字段读北京时间
 function nextRun(sc) {

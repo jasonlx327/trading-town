@@ -1,0 +1,309 @@
+{
+ "generated_at": "2026-10-05T18:24:34+08:00",
+ "rules": {
+  "version": "v3",
+  "effective": null,
+  "perTradePct": "2",
+  "perAssetPct": "40",
+  "cryptoPct": "60",
+  "dailyStopPct": "5",
+  "ddHaltPct": "15",
+  "spotOnly": true
+ },
+ "goal": {
+  "base": 2462.0,
+  "target": 4925.0,
+  "deadline": "2026 年底"
+ },
+ "equity": {
+  "ts": "2026-10-05T18:24+08:00",
+  "equity": 2562.72,
+  "hwm": 2584.44,
+  "drawdownPct": 0.84,
+  "dayPnlPct": -0.05,
+  "source": "Mac 定时只读快照 18:24（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/5 ~09:3x）；BTC/ETH=币安 USDC 对买一；LITE 1086.36 / TSLA 369.91=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "file": "site-equity.json（站点自算，非团队账本）",
+  "goalProgressPct": 4.09,
+  "toTarget": 2362.28
+ },
+ "signal": {
+  "file": "2026-10-05-crypto-0953.md",
+  "mtime": "2026-10-05 09:55",
+  "title": "2026-10-05 09:53 BJT 加密信号 · U3 BTC+ETH 从半仓补到各约 5%（priority: true）",
+  "context": "策略官出，待风控官审。放行后交易员执行。本文件不是成交记录。",
+  "sections": [
+   "结论",
+   "翻倍进度差（数据官 reports/daily-2026-10-05.md，08:50 快照）",
+   "C2 周检（data-api.binance.vision 日线，取于 09:51 BJT）",
+   "宏观背景与出处"
+  ],
+  "firstSteps": [
+   "风控官放行",
+   "每笔买单前确认最近 2 条心跳健康、出口 IP = [已隐去]（第 14 条硬条件）",
+   "只读核实两张原止损单仍 NEW"
+  ],
+  "pendingRisk": false
+ },
+ "riskLast": {
+  "ts": "2026-10-01T10:20+08:00",
+  "signal": null,
+  "event": "note",
+  "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
+  "by": "风控官",
+  "eventZh": "记录"
+ },
+ "traderLast": {
+  "ts": "2026-10-01T01:23+08:00",
+  "signal": "2026-10-01-0001-qqq-nbis",
+  "event": "emergency_close",
+  "detail": "QQQB SELL 0.375@743.15 net 278.40 USDT; residual 0.0009; stock buys frozen pending user; day still 5/10",
+  "by": "交易员/风控官",
+  "eventZh": "紧急平仓"
+ },
+ "decisionLast": {
+  "ts": "2026-10-01T10:20+08:00",
+  "signal": null,
+  "event": "note",
+  "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
+  "by": "风控官",
+  "eventZh": "记录"
+ },
+ "fills": [
+  {
+   "ts": "2026-10-01 01:14:30 CST",
+   "market": "美股",
+   "ticker": "QQQ",
+   "side": "BUY",
+   "qty": "0.3759",
+   "price": "744.072",
+   "mode": "auto",
+   "stop": "725.03"
+  },
+  {
+   "ts": "2026-10-01 21:46:07 CST",
+   "market": "美股",
+   "ticker": "QQQ",
+   "side": "BUY",
+   "qty": "0.158",
+   "price": "741.392405",
+   "mode": "auto",
+   "stop": "711.00"
+  },
+  {
+   "ts": "2026-10-01 21:57:44 CST",
+   "market": "美股",
+   "ticker": "NBIS",
+   "side": "BUY",
+   "qty": "0.294",
+   "price": "232.108843",
+   "mode": "auto",
+   "stop": "208.00"
+  },
+  {
+   "ts": "2026-10-05 09:57:30 CST",
+   "market": "加密",
+   "ticker": "BTCUSDC",
+   "side": "BUY",
+   "qty": "0.00076",
+   "price": "86612.33",
+   "mode": "auto",
+   "stop": ""
+  },
+  {
+   "ts": "2026-10-05 09:57:41 CST",
+   "market": "加密",
+   "ticker": "ETHUSDC",
+   "side": "BUY",
+   "qty": "0.0246",
+   "price": "2724.01",
+   "mode": "auto",
+   "stop": ""
+  }
+ ],
+ "fillCount": 9,
+ "fillsToday": 2,
+ "fillsTodayCap": 10,
+ "fillsTodayCapSource": "town-config.json",
+ "fillsWindowStart": "2026-10-04 21:00",
+ "holdings": [
+  {
+   "asset": "EQ_LITE",
+   "ticker": "LITE",
+   "qty": 0.70944698,
+   "wallet": "资金账户"
+  },
+  {
+   "asset": "EQ_TSLA",
+   "ticker": "TSLA",
+   "qty": 1.93546688,
+   "wallet": "资金账户"
+  },
+  {
+   "asset": "BTC",
+   "ticker": null,
+   "qty": 0.00148858,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "ETH",
+   "ticker": null,
+   "qty": 0.04735494,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "ETHFI",
+   "ticker": null,
+   "qty": 0.0026,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "FDUSD",
+   "ticker": null,
+   "qty": 0.015,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "QQQB",
+   "ticker": null,
+   "qty": 0.0009,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "USDC",
+   "ticker": null,
+   "qty": 483.40680588,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "USDT",
+   "ticker": null,
+   "qty": 1.22528875,
+   "wallet": "现货账户"
+  },
+  {
+   "asset": "ACM",
+   "ticker": null,
+   "qty": 0.00084611,
+   "wallet": "资金账户"
+  },
+  {
+   "asset": "NBISB",
+   "ticker": null,
+   "qty": 0.294,
+   "wallet": "资金账户"
+  },
+  {
+   "asset": "QQQB",
+   "ticker": null,
+   "qty": 0.158,
+   "wallet": "资金账户"
+  },
+  {
+   "asset": "USDC",
+   "ticker": null,
+   "qty": 44.16,
+   "wallet": "资金账户"
+  }
+ ],
+ "holdingsAt": "2026-10-05T18:24:25.874344+08:00",
+ "schedule": {
+  "strategist": {
+   "time": "20:17",
+   "days": "daily",
+   "what": "每日策略更新"
+  },
+  "data": {
+   "time": "08:44",
+   "days": "daily",
+   "what": "每日数据快照 + 日报（含翻倍进度）"
+  },
+  "atlas": {
+   "time": "20:02",
+   "days": "daily",
+   "what": "Atlas 下发当日目标"
+  },
+  "trader": {
+   "time": "21:37",
+   "days": "weekdays",
+   "what": "美股开盘后执行已放行的订单"
+  },
+  "rumor": {
+   "times": [
+    "02:38",
+    "05:38",
+    "08:38",
+    "13:38",
+    "20:38",
+    "23:38"
+   ],
+   "days": "daily",
+   "what": "流言更新（X 市场传闻）"
+  }
+ },
+ "botLatest": {
+  "strategist": {
+   "ts": "2026-09-30T23:58+08:00",
+   "signal": "2026-09-30-intraday1",
+   "event": "intraday1_no_new_signal",
+   "detail": "开市确认；PCE后偏多反弹；TSLA仍≈49%>40%；2352已放行待执行；本轮不重复送审；当日3/10",
+   "by": "策略官",
+   "eventZh": "intraday1_no_new_signal"
+  },
+  "risk": {
+   "ts": "2026-10-01T10:20+08:00",
+   "signal": null,
+   "event": "note",
+   "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
+   "by": "风控官",
+   "eventZh": "记录"
+  },
+  "trader": {
+   "ts": "2026-10-01T01:23+08:00",
+   "signal": "2026-10-01-0001-qqq-nbis",
+   "event": "emergency_close",
+   "detail": "QQQB SELL 0.375@743.15 net 278.40 USDT; residual 0.0009; stock buys frozen pending user; day still 5/10",
+   "by": "交易员/风控官",
+   "eventZh": "紧急平仓"
+  },
+  "data": {
+   "ts": "2026-10-01T00:04+08:00",
+   "signal": "[已隐去]",
+   "event": "exec_complete",
+   "detail": "TSLA SELL 1.45564253@350.3565 FILLED; remain 1.93546688≈28%; proceeds 509.75 USDC FUNDING; LITE/TSLA monitor stops active",
+   "by": "交易员/数据官对账",
+   "eventZh": "执行完成"
+  },
+  "atlas": null,
+  "rumor": null,
+  "designer": null
+ },
+ "dataReport": {
+  "file": "daily-2026-10-05.md",
+  "title": "数据官日报 · 2026-10-05 · 北京时间 08:50",
+  "summary": "净值 2,583.61 USDC，创新高（HWM 2,564.05 → 2,583.61），回撤 0.00%，回撤灯 绿灯；相对昨快照 +19.56（+0.76%）。北京交易日笔数 0/10（10/4 21:00 起无新成交）。不触发 15% 全停，不需用户就净值做决策。",
+  "mtime": "2026-10-05 08:52"
+ },
+ "rumor": null,
+ "updated": {
+  "tradeLog": "2026-10-05T09:57+08:00",
+  "decisionLog": "2026-10-01T10:20+08:00",
+  "signal": "2026-10-05 09:55",
+  "snapshot": "2026-10-05T18:24:25.874344+08:00",
+  "heartbeat": "2026-10-05T18:23:11+08:00",
+  "panel": "2026-10-05T18:24:34+08:00",
+  "rants": "2026-10-05 17:31 北京",
+  "report": "2026-10-05 08:52",
+  "rumor": null,
+  "feedSync": "2026-10-05 17:31:22 北京 (box feed_bundle."
+ },
+ "roles": {
+  "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
+  "risk": "按 RULES.md 自动审核每个信号：放行或否决",
+  "trader": "执行风控放行的订单（含止损），记录每一笔成交",
+  "data": "记账、对账、盯权益与回撤，出日报和翻倍进度",
+  "warroom": "信号审议会议室：策略官提案、风控官盖章",
+  "hub": "交易所代表建筑（本页只读，不连接交易所）",
+  "rumor": "盯 X 上的市场传闻，每天 6 次更新（流言是线索，不是交易信号）"
+ },
+ "dataPipeline": "每 30 分钟由 Mac 上的定时脚本自动刷新（只读快照 + 公开价格，无 AI）；成交/信号在团队同步日志后更新"
+}
