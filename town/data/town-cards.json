@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-05T23:44:38+08:00",
+ "generated_at": "2026-10-06T00:14:58+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -16,15 +16,15 @@
   "deadline": "2026 年底"
  },
  "equity": {
-  "ts": "2026-10-05T23:44+08:00",
-  "equity": 2572.27,
+  "ts": "2026-10-06T00:14+08:00",
+  "equity": 2574.1,
   "hwm": 2584.44,
-  "drawdownPct": 0.47,
-  "dayPnlPct": 0.48,
-  "source": "Mac 定时只读快照 23:44（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/5 ~09:3x）；BTC/ETH=币安 USDC 对买一；LITE 1084.43 / TSLA 377.67=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "drawdownPct": 0.4,
+  "dayPnlPct": 0.55,
+  "source": "Mac 定时只读快照 00:14（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/5 ~09:3x）；BTC/ETH=币安 USDC 对买一；LITE 1089.59 / TSLA 376.90=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
   "file": "site-equity.json（站点自算，非团队账本）",
-  "goalProgressPct": 4.48,
-  "toTarget": 2352.73
+  "goalProgressPct": 4.55,
+  "toTarget": 2350.9
  },
  "signal": {
   "file": "2026-10-05-2232-macro-release.md",
@@ -41,50 +41,30 @@
   "pendingRisk": false
  },
  "riskLast": {
-  "ts": "2026-10-01T10:20+08:00",
-  "signal": null,
-  "event": "note",
-  "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
-  "by": "风控官",
-  "eventZh": "记录"
+  "ts": "2026-10-05T21:41+08:00",
+  "signal": "2026-10-05-spcx-user-authorized",
+  "event": "spcx_void_ask_above_cap",
+  "detail": "SPCX not placed: ask≈162.55>160 cap; stops entry kept held=0 until after 02:00 BJT remove+new sha",
+  "by": "交易员/风控官/数据官",
+  "eventZh": "spcx_void_ask_above_cap"
  },
  "traderLast": {
-  "ts": "2026-10-01T01:23+08:00",
-  "signal": "2026-10-01-0001-qqq-nbis",
-  "event": "emergency_close",
-  "detail": "QQQB SELL 0.375@743.15 net 278.40 USDT; residual 0.0009; stock buys frozen pending user; day still 5/10",
-  "by": "交易员/风控官",
-  "eventZh": "紧急平仓"
+  "ts": "2026-10-05T21:42+08:00",
+  "signal": "2026-10-05-u2-qqqb-nbisb",
+  "event": "exec_complete",
+  "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
+  "by": "交易员/数据官对账",
+  "eventZh": "执行完成"
  },
  "decisionLast": {
-  "ts": "2026-10-01T10:20+08:00",
-  "signal": null,
-  "event": "note",
-  "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
-  "by": "风控官",
-  "eventZh": "记录"
+  "ts": "2026-10-05T21:42+08:00",
+  "signal": "2026-10-05-u2-qqqb-nbisb",
+  "event": "exec_complete",
+  "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
+  "by": "交易员/数据官对账",
+  "eventZh": "执行完成"
  },
  "fills": [
-  {
-   "ts": "2026-10-01 01:14:30 CST",
-   "market": "美股",
-   "ticker": "QQQ",
-   "side": "BUY",
-   "qty": "0.3759",
-   "price": "744.072",
-   "mode": "auto",
-   "stop": "725.03"
-  },
-  {
-   "ts": "2026-10-01 21:46:07 CST",
-   "market": "美股",
-   "ticker": "QQQ",
-   "side": "BUY",
-   "qty": "0.158",
-   "price": "741.392405",
-   "mode": "auto",
-   "stop": "711.00"
-  },
   {
    "ts": "2026-10-01 21:57:44 CST",
    "market": "美股",
@@ -114,10 +94,30 @@
    "price": "2724.01",
    "mode": "auto",
    "stop": ""
+  },
+  {
+   "ts": "2026-10-05 21:41:38 CST",
+   "market": "美股",
+   "ticker": "QQQ",
+   "side": "BUY",
+   "qty": "0.22",
+   "price": "752.362",
+   "mode": "auto",
+   "stop": "711.00"
+  },
+  {
+   "ts": "2026-10-05 21:42:02 CST",
+   "market": "美股",
+   "ticker": "NBIS",
+   "side": "BUY",
+   "qty": "0.15",
+   "price": "239.458",
+   "mode": "auto",
+   "stop": "208.00"
   }
  ],
- "fillCount": 9,
- "fillsToday": 0,
+ "fillCount": 11,
+ "fillsToday": 2,
  "fillsTodayCap": 10,
  "fillsTodayCapSource": "town-config.json",
  "fillsWindowStart": "2026-10-05 21:00",
@@ -201,7 +201,7 @@
    "wallet": "资金账户"
   }
  ],
- "holdingsAt": "2026-10-05T23:44:25.011517+08:00",
+ "holdingsAt": "2026-10-06T00:14:45.996023+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -246,26 +246,26 @@
    "eventZh": "intraday1_no_new_signal"
   },
   "risk": {
-   "ts": "2026-10-01T10:20+08:00",
-   "signal": null,
-   "event": "note",
-   "detail": "XXXB只有USDT对，接受，记usdt_pair_used。dry-run从头重跑；124条测试有效但重启前线上复跑。若launchd已拉起新代码：暂留运行（唯一止损、只卖），交易员贴pid/启动时间/心跳/写操作数，数据官30分钟内加急核5项，不过则回滚.bak-20261001-093257。核对通过前股票买入冻结。",
-   "by": "风控官",
-   "eventZh": "记录"
+   "ts": "2026-10-05T21:41+08:00",
+   "signal": "2026-10-05-spcx-user-authorized",
+   "event": "spcx_void_ask_above_cap",
+   "detail": "SPCX not placed: ask≈162.55>160 cap; stops entry kept held=0 until after 02:00 BJT remove+new sha",
+   "by": "交易员/风控官/数据官",
+   "eventZh": "spcx_void_ask_above_cap"
   },
   "trader": {
-   "ts": "2026-10-01T01:23+08:00",
-   "signal": "2026-10-01-0001-qqq-nbis",
-   "event": "emergency_close",
-   "detail": "QQQB SELL 0.375@743.15 net 278.40 USDT; residual 0.0009; stock buys frozen pending user; day still 5/10",
-   "by": "交易员/风控官",
-   "eventZh": "紧急平仓"
+   "ts": "2026-10-05T21:42+08:00",
+   "signal": "2026-10-05-u2-qqqb-nbisb",
+   "event": "exec_complete",
+   "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
+   "by": "交易员/数据官对账",
+   "eventZh": "执行完成"
   },
   "data": {
-   "ts": "2026-10-01T00:04+08:00",
-   "signal": "[已隐去]",
+   "ts": "2026-10-05T21:42+08:00",
+   "signal": "2026-10-05-u2-qqqb-nbisb",
    "event": "exec_complete",
-   "detail": "TSLA SELL 1.45564253@350.3565 FILLED; remain 1.93546688≈28%; proceeds 509.75 USDC FUNDING; LITE/TSLA monitor stops active",
+   "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
    "by": "交易员/数据官对账",
    "eventZh": "执行完成"
   },
@@ -281,16 +281,16 @@
  },
  "rumor": null,
  "updated": {
-  "tradeLog": "2026-10-05T09:57+08:00",
-  "decisionLog": "2026-10-01T10:20+08:00",
+  "tradeLog": "2026-10-05T21:42+08:00",
+  "decisionLog": "2026-10-05T21:42+08:00",
   "signal": "2026-10-05 22:33",
-  "snapshot": "2026-10-05T23:44:25.011517+08:00",
-  "heartbeat": "2026-10-05T23:40:28+08:00",
-  "panel": "2026-10-05T23:44:37+08:00",
+  "snapshot": "2026-10-06T00:14:45.996023+08:00",
+  "heartbeat": "2026-10-06T00:10:42+08:00",
+  "panel": "2026-10-06T00:14:57+08:00",
   "rants": "2026-10-05 23:38 北京",
   "report": "2026-10-05 08:52",
   "rumor": null,
-  "feedSync": "2026-10-05 22:35:24 北京 (box feed_bundle."
+  "feedSync": "2026-10-05 23:38:54 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
