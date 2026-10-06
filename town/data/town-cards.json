@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-06T10:21:10+08:00",
+ "generated_at": "2026-10-06T10:51:29+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -16,15 +16,15 @@
   "deadline": "2026 年底"
  },
  "equity": {
-  "ts": "2026-10-06T10:21+08:00",
-  "equity": 2580.57,
+  "ts": "2026-10-06T10:51+08:00",
+  "equity": 2577.45,
   "hwm": 2588.94,
-  "drawdownPct": 0.32,
-  "dayPnlPct": -0.12,
-  "source": "Mac 定时只读快照 10:20（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/6 08:4x）；BTC/ETH=币安 USDC 对买一；LITE 1090.18 / TSLA 379.52=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "drawdownPct": 0.44,
+  "dayPnlPct": -0.24,
+  "source": "Mac 定时只读快照 10:51（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/6 08:4x）；BTC/ETH=币安 USDC 对买一；LITE 1086.47 / TSLA 379.47=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
   "file": "site-equity.json（站点自算，非团队账本）",
-  "goalProgressPct": 4.81,
-  "toTarget": 2344.43
+  "goalProgressPct": 4.69,
+  "toTarget": 2347.55
  },
  "signal": {
   "file": "2026-10-05-2232-macro-release.md",
@@ -201,7 +201,7 @@
    "wallet": "资金账户"
   }
  ],
- "holdingsAt": "2026-10-06T10:20:59.300077+08:00",
+ "holdingsAt": "2026-10-06T10:51:17.516558+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -284,10 +284,10 @@
   "tradeLog": "2026-10-05T21:42+08:00",
   "decisionLog": "2026-10-06T02:53+08:00",
   "signal": "2026-10-06 03:00",
-  "snapshot": "2026-10-06T10:20:59.300077+08:00",
-  "heartbeat": "2026-10-06T10:16:35+08:00",
-  "panel": "2026-10-06T10:21:09+08:00",
-  "rants": "2026-10-06 09:26 北京",
+  "snapshot": "2026-10-06T10:51:17.516558+08:00",
+  "heartbeat": "2026-10-06T10:46:57+08:00",
+  "panel": "2026-10-06T10:51:28+08:00",
+  "rants": "2026-10-06 10:29 北京",
   "report": "2026-10-06 08:51",
   "rumor": null,
   "feedSync": "2026-10-06 09:26:53 北京 (box feed_bundle."
