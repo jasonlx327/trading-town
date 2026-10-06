@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-06T08:19:55+08:00",
+ "generated_at": "2026-10-06T08:50:14+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -16,19 +16,19 @@
   "deadline": "2026 年底"
  },
  "equity": {
-  "ts": "2026-10-06T08:19+08:00",
-  "equity": 2584.54,
-  "hwm": 2584.68,
-  "drawdownPct": 0.01,
-  "dayPnlPct": 0.96,
-  "source": "Mac 定时只读快照 08:19（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/5 ~09:3x）；BTC/ETH=币安 USDC 对买一；LITE 1094.65 / TSLA 379.20=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "ts": "2026-10-06T08:50+08:00",
+  "equity": 2586.43,
+  "hwm": 2586.43,
+  "drawdownPct": 0.0,
+  "dayPnlPct": 1.03,
+  "source": "Mac 定时只读快照 08:50（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/5 ~09:3x）；BTC/ETH=币安 USDC 对买一；LITE 1093.84 / TSLA 380.38=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
   "file": "site-equity.json（站点自算，非团队账本）",
-  "goalProgressPct": 4.98,
-  "toTarget": 2340.46
+  "goalProgressPct": 5.05,
+  "toTarget": 2338.57
  },
  "signal": {
   "file": "2026-10-05-2232-macro-release.md",
-  "mtime": "2026-10-05 22:33",
+  "mtime": "2026-10-06 03:00",
   "title": "2026-10-05 22:32 BJT 经济数据发布复判 · ISM 服务业 PMI（9月）",
   "context": "策略官出（RULES v3.9 起的宏观发布复判例程，22:17 档）。**结论：不动。** 不调整止损、不减仓、不出新信号。发风控官 priority=false。",
   "sections": [
@@ -57,12 +57,12 @@
   "eventZh": "执行完成"
  },
  "decisionLast": {
-  "ts": "2026-10-05T21:42+08:00",
-  "signal": "2026-10-05-u2-qqqb-nbisb",
-  "event": "exec_complete",
-  "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
-  "by": "交易员/数据官对账",
-  "eventZh": "执行完成"
+  "ts": "2026-10-06T02:53+08:00",
+  "signal": "2026-10-05-spcx-user-authorized",
+  "event": "stops_baseline_switched",
+  "detail": "stops_json_sha_baseline -> [已隐去] (old b75dcb35…779f void); SPCX empty entry removed; HB 02:52 n=4; 风控官确认",
+  "by": "数据官",
+  "eventZh": "stops_baseline_switched"
  },
  "fills": [
   {
@@ -201,7 +201,7 @@
    "wallet": "资金账户"
   }
  ],
- "holdingsAt": "2026-10-06T08:19:43.874628+08:00",
+ "holdingsAt": "2026-10-06T08:50:02.074200+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -262,12 +262,12 @@
    "eventZh": "执行完成"
   },
   "data": {
-   "ts": "2026-10-05T21:42+08:00",
-   "signal": "2026-10-05-u2-qqqb-nbisb",
-   "event": "exec_complete",
-   "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
-   "by": "交易员/数据官对账",
-   "eventZh": "执行完成"
+   "ts": "2026-10-06T02:53+08:00",
+   "signal": "2026-10-05-spcx-user-authorized",
+   "event": "stops_baseline_switched",
+   "detail": "stops_json_sha_baseline -> [已隐去] (old b75dcb35…779f void); SPCX empty entry removed; HB 02:52 n=4; 风控官确认",
+   "by": "数据官",
+   "eventZh": "stops_baseline_switched"
   },
   "atlas": null,
   "rumor": null,
@@ -277,20 +277,20 @@
   "file": "daily-2026-10-05.md",
   "title": "数据官日报 · 2026-10-05 · 北京时间 08:50",
   "summary": "净值 2,583.61 USDC，创新高（HWM 2,564.05 → 2,583.61），回撤 0.00%，回撤灯 绿灯；相对昨快照 +19.56（+0.76%）。北京交易日笔数 0/10（10/4 21:00 起无新成交）。不触发 15% 全停，不需用户就净值做决策。",
-  "mtime": "2026-10-05 08:52"
+  "mtime": "2026-10-06 02:59"
  },
  "rumor": null,
  "updated": {
   "tradeLog": "2026-10-05T21:42+08:00",
-  "decisionLog": "2026-10-05T21:42+08:00",
-  "signal": "2026-10-05 22:33",
-  "snapshot": "2026-10-06T08:19:43.874628+08:00",
-  "heartbeat": "2026-10-06T08:15:19+08:00",
-  "panel": "2026-10-06T08:19:54+08:00",
-  "rants": "2026-10-05 23:38 北京",
-  "report": "2026-10-05 08:52",
+  "decisionLog": "2026-10-06T02:53+08:00",
+  "signal": "2026-10-06 03:00",
+  "snapshot": "2026-10-06T08:50:02.074200+08:00",
+  "heartbeat": "2026-10-06T08:45:37+08:00",
+  "panel": "2026-10-06T08:50:14+08:00",
+  "rants": "2026-10-06 08:30 北京",
+  "report": "2026-10-06 02:59",
   "rumor": null,
-  "feedSync": "2026-10-05 23:38:54 北京 (box feed_bundle."
+  "feedSync": "2026-10-06 08:30:27 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
