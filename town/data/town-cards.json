@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-11T09:28:19+08:00",
+ "generated_at": "2026-10-11T09:58:39+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -16,27 +16,22 @@
   "deadline": "2026 年底"
  },
  "equity": {
-  "ts": "2026-10-11T09:28+08:00",
+  "ts": "2026-10-11T09:58+08:00",
   "equity": 2577.43,
   "hwm": 2623.18,
   "drawdownPct": 1.74,
-  "dayPnlPct": 0.01,
-  "source": "Mac 定时只读快照 09:28（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/6 08:4x）；BTC/ETH=币安 USDC 对买一；LITE 1103.36 / TSLA 382.75=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "dayPnlPct": -0.14,
+  "source": "Mac 定时只读快照 09:58（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/11 08:46）；BTC/ETH=币安 USDC 对买一；LITE 1103.36 / TSLA 382.75=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
   "file": "site-equity.json（站点自算，非团队账本）",
   "goalProgressPct": 4.69,
   "toTarget": 2347.57
  },
  "signal": {
-  "file": "2026-10-05-2232-macro-release.md",
-  "mtime": "2026-10-06 03:00",
-  "title": "2026-10-05 22:32 BJT 经济数据发布复判 · ISM 服务业 PMI（9月）",
-  "context": "策略官出（RULES v3.9 起的宏观发布复判例程，22:17 档）。**结论：不动。** 不调整止损、不减仓、不出新信号。发风控官 priority=false。",
-  "sections": [
-   "今天的发布（calendar.md）",
-   "数据（取数 22:32 BJT）",
-   "市场反应（Yahoo 5 分钟线，21:55 档 → 22:32；币安 data-api 22:32）",
-   "持仓影响"
-  ],
+  "file": "2026-10-09-lite-stop-raise-r20.md",
+  "mtime": "2026-10-09 10:07",
+  "title": "第 20 条放行单：LITE 止损上移（2026-10-09 10:08 北京）",
+  "context": "- 依据：RULES v3.19 第 20 条（风控官 10/8 核过 sha 001f1b42…7655d 后生效）。LITE 收盘浮盈 ≥2R，止损抬到保本价（参考成本 943.49 × 1.002）。",
+  "sections": [],
   "firstSteps": [],
   "pendingRisk": false
  },
@@ -57,12 +52,12 @@
   "eventZh": "执行完成"
  },
  "decisionLast": {
-  "ts": "2026-10-06T02:53+08:00",
-  "signal": "2026-10-05-spcx-user-authorized",
-  "event": "stops_baseline_switched",
-  "detail": "stops_json_sha_baseline -> [已隐去] (old b75dcb35…779f void); SPCX empty entry removed; HB 02:52 n=4; 风控官确认",
+  "ts": "2026-10-11T09:10+08:00",
+  "signal": "2026-10-11-stopmonitor-fix",
+  "event": "baseline_switched",
+  "detail": "风控官 approved: stop_monitor.py 784385f3…e16c40, pid 36901, caffeinate 36903; stops.json stays 79d96cde; old 614283 void (rollback backup only); 24h observation from 09:00:33",
   "by": "数据官",
-  "eventZh": "stops_baseline_switched"
+  "eventZh": "baseline_switched"
  },
  "fills": [
   {
@@ -201,7 +196,7 @@
    "wallet": "资金账户"
   }
  ],
- "holdingsAt": "2026-10-11T09:28:07.188173+08:00",
+ "holdingsAt": "2026-10-11T09:58:25.628023+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -262,35 +257,35 @@
    "eventZh": "执行完成"
   },
   "data": {
-   "ts": "2026-10-06T02:53+08:00",
-   "signal": "2026-10-05-spcx-user-authorized",
-   "event": "stops_baseline_switched",
-   "detail": "stops_json_sha_baseline -> [已隐去] (old b75dcb35…779f void); SPCX empty entry removed; HB 02:52 n=4; 风控官确认",
+   "ts": "2026-10-11T09:10+08:00",
+   "signal": "2026-10-11-stopmonitor-fix",
+   "event": "baseline_switched",
+   "detail": "风控官 approved: stop_monitor.py 784385f3…e16c40, pid 36901, caffeinate 36903; stops.json stays 79d96cde; old 614283 void (rollback backup only); 24h observation from 09:00:33",
    "by": "数据官",
-   "eventZh": "stops_baseline_switched"
+   "eventZh": "baseline_switched"
   },
   "atlas": null,
   "rumor": null,
   "designer": null
  },
  "dataReport": {
-  "file": "daily-2026-10-06.md",
-  "title": "数据官日报 · 2026-10-06 · 北京时间 08:48",
-  "summary": "合并净值 2,588.94 USDC（主账户 2,488.94 + 子账户 100.00），创新高（HWM 2,583.61 → 2,588.94），回撤 0.00%，绿灯；较昨快照 +5.33（+0.21%）。北京交易日 10/5 21:00 起已用 2/10。合约零仓 ✓，子账户无异动 ✓，SPCX 未持仓。不触发 5%/15%，不需用户决策。",
-  "mtime": "2026-10-06 08:51"
+  "file": "daily-2026-10-11.md",
+  "title": "数据官日报 · 2026-10-11 · 北京时间 08:46",
+  "summary": "合并净值 2,577.32 USDC（主账户 2,477.32 + 子账户 100.00），较末次正式快照 10/8 −3.67（−0.14%）；HWM 仍 2,620.85，回撤 1.66%，绿灯。10/8 晚 ETH/BTC 近端止损已于 10/10 落账（不计笔数）；本北京交易日 0/10。合约零仓 ✓，子账户无异动 ✓，SPCX 未持仓。不触发 5%/15%，不需用户就净值做决策。",
+  "mtime": "2026-10-11 08:48"
  },
  "rumor": null,
  "updated": {
-  "tradeLog": "2026-10-05T21:42+08:00",
-  "decisionLog": "2026-10-06T02:53+08:00",
-  "signal": "2026-10-06 03:00",
-  "snapshot": "2026-10-11T09:28:07.188173+08:00",
-  "heartbeat": "2026-10-11T09:25:54+08:00",
-  "panel": "2026-10-11T09:28:18+08:00",
-  "rants": "2026-10-07 14:26 北京",
-  "report": "2026-10-06 08:51",
+  "tradeLog": "2026-10-08T20:50+08:00",
+  "decisionLog": "2026-10-11T09:10+08:00",
+  "signal": "2026-10-09 10:07",
+  "snapshot": "2026-10-11T09:58:25.628023+08:00",
+  "heartbeat": "2026-10-11T09:56:14+08:00",
+  "panel": "2026-10-11T09:58:38+08:00",
+  "rants": "2026-10-11 09:32 北京",
+  "report": "2026-10-11 08:48",
   "rumor": null,
-  "feedSync": "2026-10-06 09:26:53 北京 (box feed_bundle."
+  "feedSync": "2026-10-11 09:32:13 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
