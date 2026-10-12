@@ -289,7 +289,7 @@
     "src": "../town-assets/states/hub/hub_sign_closed_today.png",
     "host": "hub",
     "offset": [
-     20,
+     6,
      115
     ]
    },
@@ -361,14 +361,14 @@
    "stampApprove": {
     "src": "../town-assets/states/war_room/warroom_stamp_approve.png",
     "offsetInBoard": [
-     6,
+     1,
      26
     ]
    },
    "stampReject": {
     "src": "../town-assets/states/war_room/warroom_stamp_reject.png",
     "offsetInBoard": [
-     6,
+     1,
      26
     ]
    },

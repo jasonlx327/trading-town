@@ -56,6 +56,22 @@ const kwMatch = (s, kws) => { s = String(s || '').toLowerCase(); return !!s && (
 const etToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 const hhmm = d => d ? d.toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 const short = s => String(s || '').replace(/^\.\.\//, '');
+/* ---- New York time (en2, 2026-10-12): all stored times are Beijing (UTC+8) strings or ISO; display = America/New_York (EDT/EST automatic), converted here only ---- */
+const NY_TZ = 'America/New_York';
+const NY_DTF = new Intl.DateTimeFormat('en-CA', { timeZone: NY_TZ, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
+const nyP = d => { const o = {}; for (const p of NY_DTF.formatToParts(d)) o[p.type] = p.value; return o; };
+const nyStamp = d => { const p = nyP(d); return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`; };   // 2026-10-11 23:28
+const nyHM = d => { if (!d || isNaN(d)) return '—'; const p = nyP(d); return `${p.month}/${p.day} ${p.hour}:${p.minute}`; };  // 10/11 23:28 (same shape as hhmm)
+// string/ISO -> Date. Explicit offset or Z is honoured; anything else (naive 'YYYY-MM-DD HH:MM[:SS]', '... 北京', '... CST') is Beijing time (+08:00).
+const bjParse = s => {
+  if (s == null || s === '') return null; if (s instanceof Date) return isNaN(s) ? null : s;
+  const t = String(s).trim(), m = t.match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?\s*(Z|[+-]\d{2}:?\d{2})?/);
+  if (!m) return null;
+  let off = m[7] || '+08:00'; if (off !== 'Z' && !off.includes(':')) off = off.slice(0, 3) + ':' + off.slice(3);
+  const d = new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6] || '00'}${off}`); return isNaN(d) ? null : d;
+};
+const nyT = s => { const d = bjParse(s); return d ? nyStamp(d) + ' New York' : (s == null || s === '' ? 'N/A' : String(s)); };
+
 function tradingDaysUntil(dateStr) { // 美东今天(不含) 到 目标日(含) 的工作日数
   const t = new Date(etToday() + 'T12:00:00Z'), d = new Date(String(dateStr).slice(0, 10) + 'T12:00:00Z');
   if (isNaN(d)) return null; if (d < t) return -1; let n = 0;
@@ -310,7 +326,7 @@ async function refresh() {
   STATE.firstLoad = false;
   await loadRants(); await loadCards(); await loadRumor();
   if (CUR_CARD && !document.getElementById('card').hidden) showDetail(CUR_CARD, true);  // 打开着的信息卡跟着数据刷新
-  if (BUNDLE) document.getElementById('dataGen').textContent = ` · Public data bundle generated ${hhmm(new Date(BUNDLE.generated_at))} Beijing time (balances and prices auto-refresh every 30 min; fills update after log sync)`;
+  if (BUNDLE) document.getElementById('dataGen').textContent = ` · Public data bundle generated ${nyHM(new Date(BUNDLE.generated_at))} New York time (balances and prices auto-refresh every 30 min; fills update after log sync)`;
   renderPanels(); renderFeed();
 }
 
@@ -408,7 +424,7 @@ const rantsOf = bot => (RANTS?.rants || []).filter(x => x.bot === bot && x.text)
 function renderRantWall() {
   const wrap = document.getElementById('rants'); if (!wrap || !RANTS) return;
   rantTimers.forEach(clearInterval); rantTimers = [];
-  document.getElementById('rantMeta').textContent = RANTS.updated ? `Updated ${String(RANTS.updated).replace(/\s*北京$/, ' Beijing')}` : '';
+  document.getElementById('rantMeta').textContent = RANTS.updated ? `Updated ${nyT(RANTS.updatedIso || RANTS.updated)}` : '';
   const BOTS = RANTS.bots || {};
   // 摸鱼角显示 rants.json 里的每一条（同一个 bot 可以有多条），按时间新→旧，最多 5 条
   const list = (RANTS.rants || []).map((x, i) => ({ x, i })).filter(o => o.x && o.x.text && o.x.bot)
@@ -478,10 +494,17 @@ function tickBubble(now) {
   const c = cand[Math.floor(Math.random() * cand.length)], l = rantsOf(c.role);
   RANT_BUBBLE = { c, text: l[Math.floor(Math.random() * l.length)].text, until: now + CFG.rants.bubbleSeconds * 1000 };
 }
-function wrapText(s, max) { const out = []; let cur = ''; for (const ch of s) { cur += ch; if (cur.length >= max && /[，。、！？：；,.!?)\s]/.test(ch)) { out.push(cur); cur = ''; } else if (cur.length >= max + 4) { out.push(cur); cur = ''; } } if (cur) out.push(cur); return out.slice(0, 5); }
+function wrapText(s, max) { if (!/[\u3400-\u9fff]/.test(s)) return wrapWords(s, 360, 6); const out = []; let cur = ''; for (const ch of s) { cur += ch; if (cur.length >= max && /[，。、！？：；,.!?)\s]/.test(ch)) { out.push(cur); cur = ''; } else if (cur.length >= max + 4) { out.push(cur); cur = ''; } } if (cur) out.push(cur); return out.slice(0, 5); }
+function wrapWords(s, maxPx, maxLines) {   // greedy word wrap using the canvas font that is already set; ellipsis when it would exceed maxLines
+  const out = []; let cur = '';
+  for (const w of String(s).split(/\s+/)) { const t = cur ? cur + ' ' + w : w; if (cur && ctx.measureText(t).width > maxPx) { out.push(cur); cur = w; } else cur = t; }
+  if (cur) out.push(cur);
+  if (out.length > maxLines) { out.length = maxLines; out[maxLines - 1] = out[maxLines - 1].replace(/[\s,.;:]*$/, '') + '…'; }
+  return out;
+}
 function drawBubble(now) {
   const b = RANT_BUBBLE; if (!b || now > b.until || b.c.hidden) return;
-  const lines = wrapText(b.text, 11), lh = 28; ctx.font = `${FONT ? 24 : 20}px ${FONT}"Noto Sans CJK SC",sans-serif`;
+  ctx.font = `${FONT ? 24 : 20}px ${FONT}"Noto Sans CJK SC",sans-serif`; const lines = wrapText(b.text, 11), lh = 28;
   const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 20, h = lines.length * lh + 12;
   let x = X(b.c.x) - w / 2, y = X(b.c.y - 30) - h - 14; x = Math.max(4, Math.min(W - w - 4, x)); if (y < 4) y = X(b.c.y) + 12;
   const px = (a, b2, c2, d, col) => { ctx.fillStyle = col; ctx.fillRect(Math.round(a), Math.round(b2), Math.round(c2), Math.round(d)); };
@@ -601,7 +624,7 @@ function frame(nowT) {
   items.sort((a, b) => a.y - b.y).forEach(o => o.d());
   drawHover(t); tickBubble(Date.now()); drawBubble(Date.now());
   for (const l of CFG.layout.sideLabels || []) { const off = l.district === 'crypto' && !STATE.crypto.hasData; text(l.text + (off ? ' (not connected yet)' : ''), X(l.x), X(l.y), off ? '#a7a9b8' : '#fff1a8'); }
-  document.getElementById('clock').textContent = new Date().toLocaleString('sv-SE', { hour12: false, timeZone: 'Asia/Shanghai' }) + ' Beijing time';
+  document.getElementById('clock').textContent = new Date().toLocaleString('sv-SE', { hour12: false, timeZone: NY_TZ }) + ' New York';
   requestAnimationFrame(frame);
 }
 let lastT = performance.now();
@@ -671,9 +694,9 @@ function renderFeed() {
   const ul = document.getElementById('feed'), f = STATE.feed, sys = [];
   for (const id of DISTRICTS) { const d = STATE[id], n = (CFG.districts[id].nameEn || CFG.districts[id].name); if (!d.trades) sys.push(`${n}: ${short(d.src.tradeLog)} does not exist yet — ${CFG.districts[id].placeholderEn || CFG.districts[id].placeholderLabel}`); else if (!d.tradeRows.length) sys.push(`${n}: ${short(d.src.tradeLog)} no records (0 rows)`); if (d.hb && !d.hbRows.length) sys.push(`${n}: ${short(d.src.heartbeat)} no heartbeat rows (0 rows)`); if (d.visuals && d.riskHalt) sys.push(`${n}: Risk halt — ${d.riskHaltReason} (only the user can resume)`); if (d.visuals && d.dailyHalt) sys.push(`${n}: Closed for today — ${d.dailyHaltReason}`); }
   const us = STATE.us; if (us.signal) { const k = Object.keys(us.signal.signals || {})[0]; if (k) sys.push(`Strategist research signal (backtest output, not a trade) as_of ${us.signal.as_of}: ${k} → ${Object.entries(us.signal.signals[k].weights || {}).map(([a, w]) => `${a} ${(w * 100).toFixed(0)}%`).join(' ')}`); }
-  document.getElementById('feedMeta').textContent = `${f.length} log events · checked at ${hhmm(STATE.checkedAt)}`;
+  document.getElementById('feedMeta').textContent = `${f.length} log events · checked at ${nyHM(STATE.checkedAt)} New York`;
   ul.innerHTML = sys.map(s => `<li><span class="t">[SYSTEM]</span>${esc(s)}</li>`).join('') +
-    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts || '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">No real log events yet — the characters are just wandering around town</li>');
+    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts ? nyT(e.ts) : '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">No real log events yet — the characters are just wandering around town</li>');
   ul.querySelectorAll('li.ev').forEach(li => li.onclick = () => { const e = STATE.feed[+li.dataset.i], d = STATE[e.district]; if (!d.visuals) return; if (e.isMeet) startMeeting(e, null); else if (e.isTrade && gateOK(d, e.row)) startTradeRun(e); });
 }
 /* ---------- 建筑信息卡（数据来自 data/town-cards.json，发布时生成；缺数据显示「暂无」） ---------- */
@@ -695,18 +718,21 @@ async function loadCards() {
 }
 const NA = 'N/A';
 const bjNow = () => new Date(Date.now() + 8 * 3600e3); // 用 UTC 字段读北京时间
-function nextRun(sc) {
+function nextRun(sc) {   // schedule.time is Beijing wall-clock "HH:MM"; the same instant is shown in New York time
   if (!sc) return NA;
-  const [hh, mm] = sc.time.split(':').map(Number), n = bjNow();
+  const [hh, mm] = sc.time.split(':').map(Number), n = bjNow(), nowMs = Date.now();
+  const nyToday = nyStamp(new Date(nowMs)).slice(0, 10), nyTomorrow = new Date(Date.parse(nyToday + 'T12:00:00Z') + 864e5).toISOString().slice(0, 10);
   for (let add = 0; add < 8; add++) {
-    const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, hh, mm));
-    const wd = d.getUTCDay(); if (sc.days === 'weekdays' && (wd === 0 || wd === 6)) continue;
-    if (d > n) { const mins = Math.round((d - n) / 60000), dayL = add === 0 ? 'today' : add === 1 ? 'tomorrow' : `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-      return `${dayL} ${sc.time} Beijing (in ${mins >= 60 ? Math.floor(mins / 60) + 'h ' : ''}${mins % 60}m)${sc.days === 'weekdays' ? ' · US trading days' : ' · daily'}`; }
+    const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, hh, mm) - 8 * 3600e3);   // real instant of Beijing hh:mm on that Beijing date
+    const wd = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add)).getUTCDay(); if (sc.days === 'weekdays' && (wd === 0 || wd === 6)) continue;
+    if (d.getTime() > nowMs) {
+      const mins = Math.round((d.getTime() - nowMs) / 60000), ny = nyStamp(d), nd = ny.slice(0, 10);
+      const dayL = nd === nyToday ? 'today' : nd === nyTomorrow ? 'tomorrow' : `${+nd.slice(5, 7)}/${+nd.slice(8, 10)}`;
+      return `${dayL} ${ny.slice(11)} New York (in ${mins >= 60 ? Math.floor(mins / 60) + 'h ' : ''}${mins % 60}m)${sc.days === 'weekdays' ? ' · US trading days' : ' · daily'}`; }
   }
   return NA;
 }
-const bjT = s => { if (!s) return NA; return String(s).replace('T', ' ').replace(/(\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?\s*(?:\+08:00|CST)?$/, '$1') + ' Beijing'; };
+const bjT = s => { if (!s) return NA; return nyT(s); };   // name kept for the many call sites; input is Beijing/ISO, output is New York
 const cRow = (k, v, cls = '') => `<div class="cr ${cls}"><span>${k}</span><b>${v == null || v === '' ? NA : v}</b></div>`;
 const money = v => v == null ? NA : '$' + fmt(v, 2);
 function goalBar(C) {
@@ -749,8 +775,8 @@ function nextRun2(sc) { if (!sc) return NA; if (!sc.times) return nextRun(sc); l
 function statusLine(k) { const d = CARDS?.botLatest?.[k]; return d ? `<div class="csec">Latest status</div><div class="cbox">${decLine(d)}</div>` : ''; }
 function updatedFoot(keys) {
   const U = CARDS?.updated || {}, P = STATE.us?.P, lab = { signal: 'Signal', decisionLog: 'Decision log', tradeLog: 'Trade log', snapshot: 'Account snapshot', heartbeat: 'Stop-monitor heartbeat', panel: '面板数据', rants: 'Slacking Corner', report: 'Daily report', rumor: 'Rumors', feedSync: 'Log sync' };
-  const val = { ...U, snapshot: P?.snapshot?.taken_at || U.snapshot, heartbeat: P?.heartbeat?.ts || U.heartbeat, panel: P?.generated_at || U.panel, rants: RANTS?.updated || U.rants, rumor: rumorData()?.ts || U.rumor };
-  return '<div class="cupd">Last updated: ' + keys.map(k => `${lab[k]} ${val[k] ? esc(String(val[k]).replace(/^\d{4}-/, '').replace('T', ' ').replace(/(:\d{2})(?::\d{2}(?:\.\d+)?)?\+08:00$/, '$1').replace(/ (北京|Beijing)$/, '')) : 'N/A'}`).join(' · ') + '</div>';
+  const val = { ...U, snapshot: P?.snapshot?.taken_at || U.snapshot, heartbeat: P?.heartbeat?.ts || U.heartbeat, panel: P?.generated_at || U.panel, rants: RANTS?.updatedIso || RANTS?.updated || U.rants, rumor: rumorData()?.ts || U.rumor };
+  return '<div class="cupd">Last updated (New York): ' + keys.map(k => `${lab[k]} ${val[k] && bjParse(val[k]) ? esc(nyStamp(bjParse(val[k])).slice(5)) : 'N/A'}`).join(' · ') + '</div>';
 }
 function showDetail(k, keepFocus) {
   CUR_CARD = k;
@@ -763,7 +789,7 @@ function showDetail(k, keepFocus) {
   else if (k === 'strategist') {
     const s = C.signal;
     h += cRow('Status', s ? (s.pendingRisk ? '<span class="warnc">Latest signal awaiting risk-officer review</span>' : 'Signal issued') : NA);
-    h += `<div class="csec">Latest signal</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · file updated ${esc(s.mtime)} Beijing</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>Sections: ${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
+    h += `<div class="csec">Latest signal</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · file updated ${esc(bjT(s.mtime))}</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>Sections: ${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
     h += statusLine('strategist');
     h += cRow('Next routine run', nextRun(C.schedule?.strategist) + (C.schedule?.strategist ? ` · ${esc(C.schedule.strategist.what)}` : ''));
     h += rantFor('strategist') + updatedFoot(['signal', 'decisionLog', 'rants']);
@@ -789,14 +815,14 @@ function showDetail(k, keepFocus) {
     h += cRow('Latest equity', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
     h += cRow('Equity high (HWM)', money(e.hwm)) + cRow('Current drawdown', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('Today\'s P&L', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
     h += goalBar(P ? { ...C, equity: { ...C.equity, equity: e.equity, ts: e.ts, goalProgressPct: C.goal?.base && C.goal?.target && e.equity != null ? (e.equity - C.goal.base) / (C.goal.target - C.goal.base) * 100 : null, toTarget: C.goal?.target && e.equity != null ? C.goal.target - e.equity : null } } : C);
-    if (C.dataReport) h += `<div class="csec">Latest daily report</div><div class="cbox"><b>${esc(C.dataReport.title)}</b><br>${esc(C.dataReport.summary || '')}<br><small>${esc(C.dataReport.file)} · ${esc(C.dataReport.mtime)} Beijing</small></div>`;
+    if (C.dataReport) h += `<div class="csec">Latest daily report</div><div class="cbox"><b>${esc(C.dataReport.title)}</b><br>${esc(C.dataReport.summary || '')}<br><small>${esc(C.dataReport.file)} · ${esc(bjT(C.dataReport.mtime))}</small></div>`;
     if (e.source) h += `<div class="cnote">Basis: ${esc(e.source)} (${esc(e.file || 'data/equity-hwm.csv')})</div>`;
     h += cRow('Next routine run', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
     h += rantFor('data') + updatedFoot(['snapshot', 'panel', 'report', 'rants']);
   } else if (k === 'hub') {
     h += cRow('Status', haltedAny() ? '<span class="warnc">Roadblock: full risk stop</span>' : dailyAny() ? '<span class="warnc">Closed for today</span>' : 'Open (this page is read-only and not connected to any exchange)');
-    if (P?.snapshot?.ok) { h += `<div class="csec">Holdings (spot + funding combined · ${esc(hhmm(new Date(P.snapshot.taken_at)))} Beijing)</div><table class="ctab"><tr><th>Asset</th><th>Qty</th><th>Value</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(x.asset)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td><td>${x.value != null ? fmt(x.value) : '—'}</td></tr>`).join('')}<tr><td><b>Total</b></td><td></td><td><b>${fmt(P.snapshot.total)}</b></td></tr></table>`; }
-    else h += `<div class="csec">Holdings (latest snapshot${C.holdingsAt ? ' · ' + esc(hhmm(new Date(C.holdingsAt))) + ' Beijing' : ''})</div>`;
+    if (P?.snapshot?.ok) { h += `<div class="csec">Holdings (spot + funding combined · ${esc(nyHM(new Date(P.snapshot.taken_at)))} New York)</div><table class="ctab"><tr><th>Asset</th><th>Qty</th><th>Value</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(x.asset)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td><td>${x.value != null ? fmt(x.value) : '—'}</td></tr>`).join('')}<tr><td><b>Total</b></td><td></td><td><b>${fmt(P.snapshot.total)}</b></td></tr></table>`; }
+    else h += `<div class="csec">Holdings (latest snapshot${C.holdingsAt ? ' · ' + esc(nyHM(new Date(C.holdingsAt))) + ' New York' : ''})</div>`;
     if (!P?.snapshot?.ok) h += C.holdings?.length ? `<table class="ctab"><tr><th>Asset</th><th>Account</th><th>Qty</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
     h += rulesBlock(C.rules) + goalBar(C);
     h += cRow('Fill count', C.fillCount == null ? NA : `${C.fillCount}${C.fillsToday != null && C.fillsTodayCap ? ` (today ${C.fillsToday}/${C.fillsTodayCap})` : ''}`);
