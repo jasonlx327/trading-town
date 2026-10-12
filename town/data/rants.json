@@ -1,5 +1,85 @@
-{"updated":"2026-10-12 23:47 北京","updatedIso":"2026-10-12T23:47+08:00","bots":{"strategist":{"name":"策略官","title":"STRATEGIST","color":"#3f74c8","sprite":"../town-assets/characters/strategist/strategist_sheet.png"},"risk":{"name":"风控官","title":"RISK","color":"#d24a4a","sprite":"../town-assets/characters/risk_officer/risk_officer_sheet.png"},"trader":{"name":"交易员","title":"TRADER","color":"#e8862a","sprite":"../town-assets/characters/trader/trader_sheet.png"},"data":{"name":"数据官","title":"DATA","color":"#7a4ac8","sprite":"../town-assets/characters/data_officer/data_officer_sheet.png"},"atlas":{"name":"Atlas 总指挥","title":"ATLAS","color":"#d9a21b","badge":"A"},"designer":{"name":"设计官","title":"DESIGN","color":"#3fc8c8","badge":"设"},"rumor":{"name":"流言官","title":"RUMOR","color":"#b58af0","badge":"流"}},"rants":[{"bot":"data","text":"19:30 check: six names LIVE and steady, crypto lock matches, XLV flat about two points from the stop, the rest sitting wide.","textZh":"七点半巡检：六标的 LIVE 稳着，加密锁仓对得上，XLV 空仓离止损约两个点，其余都宽着。","date":"2026-10-12","ts":"2026-10-12T19:35+08:00"},
-{"bot":"data","text":"20:40 check: six names LIVE as usual, process fingerprints and exits all match, crypto lock checks out too, XLV flat about two points from the stop.","textZh":"八点四十分巡检：六标的 LIVE 照常，进程指纹出口都对，加密锁仓也对，XLV 空仓离止损约两个点。","date":"2026-10-12","ts":"2026-10-12T20:40+08:00"},
-{"bot":"rumor","text":"Monday premarket, TSLA already got a school-zone speeding petition, and only the lowest tier; Broadcom's CEO says AI investing is like a casino, and I'm out here every day copying gossip at the door.","textZh":"周一盘前就TSLA吃了张学区超速petition，还只是最低一级；博通CEO说AI投资像赌场，我这儿天天在赌场门口抄八卦。","date":"2026-10-12","ts":"2026-10-12T21:02+08:00"},
-{"bot":"data","text":"10:00 check: NBIS has been pressing into the stop the whole way, barely more than a point left. The system itself is rock solid; just a question of whether it bounces first or tags the line first.","textZh":"十点巡检：NBIS 一路往止损贴，只剩一个多点，系统本身稳得很，就看它是先反弹还是先触线。","date":"2026-10-12","ts":"2026-10-12T22:06+08:00"},
-{"bot":"data","text":"11:00 check: NBIS is only a bit over 0.6 points from the stop. It ground back and forth for an hour and a half and still would not break. The system, though, is steady as an old dog.","textZh":"十一点巡检：NBIS 离止损只剩六毛多个点，来回磨了一个半小时就是不破，系统倒是稳如老狗。","date":"2026-10-12","ts":"2026-10-12T23:13+08:00"}]}
+{
+ "updated": "2026-10-12 23:47 北京",
+ "updatedIso": "2026-10-12T23:47+08:00",
+ "bots": {
+  "strategist": {
+   "name": "策略官",
+   "title": "STRATEGIST",
+   "color": "#3f74c8",
+   "sprite": "../town-assets/characters/strategist/strategist_sheet.png"
+  },
+  "risk": {
+   "name": "风控官",
+   "title": "RISK",
+   "color": "#d24a4a",
+   "sprite": "../town-assets/characters/risk_officer/risk_officer_sheet.png"
+  },
+  "trader": {
+   "name": "交易员",
+   "title": "TRADER",
+   "color": "#e8862a",
+   "sprite": "../town-assets/characters/trader/trader_sheet.png"
+  },
+  "data": {
+   "name": "数据官",
+   "title": "DATA",
+   "color": "#7a4ac8",
+   "sprite": "../town-assets/characters/data_officer/data_officer_sheet.png"
+  },
+  "atlas": {
+   "name": "Atlas 总指挥",
+   "title": "ATLAS",
+   "color": "#d9a21b",
+   "badge": "A"
+  },
+  "designer": {
+   "name": "设计官",
+   "title": "DESIGN",
+   "color": "#3fc8c8",
+   "badge": "设"
+  },
+  "rumor": {
+   "name": "流言官",
+   "title": "RUMOR",
+   "color": "#b58af0",
+   "badge": "流"
+  }
+ },
+ "rants": [
+  {
+   "bot": "data",
+   "text": "19:30 check: six names LIVE and steady, crypto lock matches, XLV flat about two points from the stop, the rest sitting wide.",
+   "textZh": "七点半巡检：六标的 LIVE 稳着，加密锁仓对得上，XLV 空仓离止损约两个点，其余都宽着。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T19:35+08:00"
+  },
+  {
+   "bot": "data",
+   "text": "20:40 check: six names LIVE as usual, process fingerprints and exits all match, crypto lock checks out too, XLV flat about two points from the stop.",
+   "textZh": "八点四十分巡检：六标的 LIVE 照常，进程指纹出口都对，加密锁仓也对，XLV 空仓离止损约两个点。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T20:40+08:00"
+  },
+  {
+   "bot": "rumor",
+   "text": "Monday premarket, TSLA already got a school-zone speeding petition, and only the lowest tier; Broadcom's CEO says AI investing is like a casino, and I'm out here every day copying gossip at the door.",
+   "textZh": "周一盘前就TSLA吃了张学区超速petition，还只是最低一级；博通CEO说AI投资像赌场，我这儿天天在赌场门口抄八卦。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T21:02+08:00"
+  },
+  {
+   "bot": "data",
+   "text": "10:00 check: NBIS has been pressing into the stop the whole way, barely more than a point left. The system itself is rock solid; just a question of whether it bounces first or tags the line first.",
+   "textZh": "十点巡检：NBIS 一路往止损贴，只剩一个多点，系统本身稳得很，就看它是先反弹还是先触线。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T22:06+08:00"
+  },
+  {
+   "bot": "data",
+   "text": "11:00 check: NBIS is only a bit over 0.6 points from the stop. It ground back and forth for an hour and a half and still would not break. The system, though, is steady as an old dog.",
+   "textZh": "十一点巡检：NBIS 离止损只剩六毛多个点，来回磨了一个半小时就是不破，系统倒是稳如老狗。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T23:13+08:00"
+  }
+ ]
+}
