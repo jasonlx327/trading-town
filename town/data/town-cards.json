@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-12T09:14:18+08:00",
+ "generated_at": "2026-10-12T09:44:38+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -16,15 +16,15 @@
   "deadline": "2026 年底"
  },
  "equity": {
-  "ts": "2026-10-12T09:14+08:00",
-  "equity": 2587.89,
+  "ts": "2026-10-12T09:44+08:00",
+  "equity": 2583.43,
   "hwm": 2623.18,
-  "drawdownPct": 1.35,
-  "dayPnlPct": 0.41,
-  "source": "Mac 定时只读快照 09:14（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/11 08:46）；BTC/ETH=币安 USDC 对买一；LITE 1111.54 / TSLA 384.35=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
+  "drawdownPct": 1.52,
+  "dayPnlPct": 0.24,
+  "source": "Mac 定时只读快照 09:44（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/12 08:46）；BTC/ETH=币安 USDC 对买一；LITE 1107.66 / TSLA 383.64=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
   "file": "site-equity.json（站点自算，非团队账本）",
-  "goalProgressPct": 5.11,
-  "toTarget": 2337.11
+  "goalProgressPct": 4.93,
+  "toTarget": 2341.57
  },
  "signal": {
   "file": "2026-10-11-defensive-xlv-xle.md",
@@ -61,12 +61,12 @@
   "eventZh": "执行完成"
  },
  "decisionLast": {
-  "ts": "2026-10-11T09:10+08:00",
-  "signal": "2026-10-11-stopmonitor-fix",
-  "event": "baseline_switched",
-  "detail": "风控官 approved: stop_monitor.py 784385f3…e16c40, pid 36901, caffeinate 36903; stops.json stays 79d96cde; old 614283 void (rollback backup only); 24h observation from 09:00:33",
+  "ts": "2026-10-12T08:42+08:00",
+  "signal": "2026-10-12-xlv-xle-prebuy",
+  "event": "baseline_switch",
+  "detail": "stops.json 4588e544…477f verified: diff vs bak = only XLV(2.05@167.23) and XLE(2.68@62.48) entries; HB 08:36:22 n=6 alerts none; pid 36901 unchanged; baseline switched, 风控官 asked to confirm sha",
   "by": "数据官",
-  "eventZh": "baseline_switched"
+  "eventZh": "baseline_switch"
  },
  "fills": [
   {
@@ -205,7 +205,7 @@
    "wallet": "资金账户"
   }
  ],
- "holdingsAt": "2026-10-12T09:14:06.249284+08:00",
+ "holdingsAt": "2026-10-12T09:44:24.819478+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -266,35 +266,35 @@
    "eventZh": "执行完成"
   },
   "data": {
-   "ts": "2026-10-11T09:10+08:00",
-   "signal": "2026-10-11-stopmonitor-fix",
-   "event": "baseline_switched",
-   "detail": "风控官 approved: stop_monitor.py 784385f3…e16c40, pid 36901, caffeinate 36903; stops.json stays 79d96cde; old 614283 void (rollback backup only); 24h observation from 09:00:33",
+   "ts": "2026-10-12T08:42+08:00",
+   "signal": "2026-10-12-xlv-xle-prebuy",
+   "event": "baseline_switch",
+   "detail": "stops.json 4588e544…477f verified: diff vs bak = only XLV(2.05@167.23) and XLE(2.68@62.48) entries; HB 08:36:22 n=6 alerts none; pid 36901 unchanged; baseline switched, 风控官 asked to confirm sha",
    "by": "数据官",
-   "eventZh": "baseline_switched"
+   "eventZh": "baseline_switch"
   },
   "atlas": null,
   "rumor": null,
   "designer": null
  },
  "dataReport": {
-  "file": "daily-2026-10-11.md",
-  "title": "数据官日报 · 2026-10-11 · 北京时间 08:46",
-  "summary": "合并净值 2,577.32 USDC（主账户 2,477.32 + 子账户 100.00），较末次正式快照 10/8 −3.67（−0.14%）；HWM 仍 2,620.85，回撤 1.66%，绿灯。10/8 晚 ETH/BTC 近端止损已于 10/10 落账（不计笔数）；本北京交易日 0/10。合约零仓 ✓，子账户无异动 ✓，SPCX 未持仓。不触发 5%/15%，不需用户就净值做决策。",
-  "mtime": "2026-10-11 08:48"
+  "file": "daily-2026-10-12.md",
+  "title": "数据官日报 · 2026-10-12 · 北京时间 08:46",
+  "summary": "合并净值 2,593.98 USDC（主账户 2,493.98 + 子账户 100.00），较昨正式快照 10/11 +16.66（+0.65%）；HWM 仍 2,620.85，回撤 1.03%，绿灯。本北京交易日 0/10。合约零仓 ✓，子账户无异动 ✓，SPCX 未持仓；stops 已加 XLV/XLE 预买空条目（held=0，待 21:30 后条件复核）。不触发 5%/15%，不需用户就净值做决策。",
+  "mtime": "2026-10-12 08:48"
  },
  "rumor": null,
  "updated": {
   "tradeLog": "2026-10-08T20:50+08:00",
-  "decisionLog": "2026-10-11T09:10+08:00",
+  "decisionLog": "2026-10-12T08:42+08:00",
   "signal": "2026-10-11 14:55",
-  "snapshot": "2026-10-12T09:14:06.249284+08:00",
-  "heartbeat": "2026-10-12T09:12:48+08:00",
-  "panel": "2026-10-12T09:14:17+08:00",
-  "rants": "2026-10-12 08:29 北京",
-  "report": "2026-10-11 08:48",
+  "snapshot": "2026-10-12T09:44:24.819478+08:00",
+  "heartbeat": "2026-10-12T09:43:06+08:00",
+  "panel": "2026-10-12T09:44:37+08:00",
+  "rants": "2026-10-12 09:30 北京",
+  "report": "2026-10-12 08:48",
   "rumor": null,
-  "feedSync": "2026-10-12 08:30:00 北京 (box feed_bundle."
+  "feedSync": "2026-10-12 09:30:52 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
