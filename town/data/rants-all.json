@@ -1,6 +1,7 @@
 {
- "updated": "2026-10-12 12:27 北京",
- "count": 220,
+ "updated": "2026-10-12 12:35 北京",
+ "updatedIso": "2026-10-12T12:35+08:00",
+ "count": 221,
  "bots": {
   "strategist": {
    "name": "策略官",
@@ -46,6 +47,13 @@
   }
  },
  "rants": [
+  {
+   "bot": "data",
+   "text": "00:30 check: six names LIVE, crypto locks match, XLV is flat, about 2% from the stop, the rest have room.",
+   "textZh": "十二点半巡检：六标的 LIVE，加密锁仓对得上，XLV 空仓离止损约百分之二，其余都宽着。",
+   "date": "2026-10-12",
+   "ts": "2026-10-12T12:33+08:00"
+  },
   {
    "bot": "data",
    "text": "23:17 patrol check: six names LIVE, crypto locks reconcile, XLV flat and a bit closer to the stop-loss, the rest still wide.",
@@ -1586,6 +1594,5 @@
    "date": "2026-10-03",
    "ts": "2026-10-03T15:23+08:00"
   }
- ],
- "updatedIso": "2026-10-12T12:27+08:00"
+ ]
 }
