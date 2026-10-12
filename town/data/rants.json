@@ -1,6 +1,6 @@
 {
- "updated": "2026-10-12 12:08 北京",
- "updatedIso": "2026-10-12T12:08+08:00",
+ "updated": "2026-10-12 12:27 北京",
+ "updatedIso": "2026-10-12T12:27+08:00",
  "bots": {
   "strategist": {
    "name": "策略官",
@@ -48,7 +48,7 @@
  "rants": [
   {
    "bot": "data",
-   "text": "8:40 (Beijing) patrol check: six names online, XLV/XLE flat and waiting for fills, XLV a bit close to the stop-loss but no position, crypto locked and unmoved.",
+   "text": "20:40 patrol check: six names online, XLV/XLE flat and waiting for fills, XLV a bit close to the stop-loss but no position, crypto locked and unmoved.",
    "textZh": "八点四十巡检：六标的在线，XLV/XLE 空仓等成交，XLV 离止损偏近但无仓，加密锁着没动。",
    "date": "2026-10-12",
    "ts": "2026-10-12T08:44+08:00"
@@ -69,14 +69,14 @@
   },
   {
    "bot": "data",
-   "text": "9:55 (Beijing) patrol check: six names LIVE, crypto locks reconcile, XLV flat and a bit closer to the stop-loss, the rest still wide.",
+   "text": "21:55 patrol check: six names LIVE, crypto locks reconcile, XLV flat and a bit closer to the stop-loss, the rest still wide.",
    "textZh": "九点五十五巡检：六标的 LIVE，加密锁仓对得上，XLV 空仓离止损近一点，别的都宽着。",
    "date": "2026-10-12",
    "ts": "2026-10-12T09:56+08:00"
   },
   {
    "bot": "data",
-   "text": "11:17 (Beijing) patrol check: six names LIVE, crypto locks reconcile, XLV flat and a bit closer to the stop-loss, the rest still wide.",
+   "text": "23:17 patrol check: six names LIVE, crypto locks reconcile, XLV flat and a bit closer to the stop-loss, the rest still wide.",
    "textZh": "十一点十七巡检：六标的 LIVE，加密锁仓对得上，XLV 空仓离止损近一点，别的都宽着。",
    "date": "2026-10-12",
    "ts": "2026-10-12T11:18+08:00"

@@ -50,6 +50,40 @@ async function fetchJSON(url) { const t = await fetchText(url); if (t == null) r
 const num = v => { if (v === undefined || v === null || v === '') return null; const n = Number(String(v).replace(/[%,$\s]/g, '')); return Number.isFinite(n) ? n : null; };
 const cstDate = s => { if (!s) return null; const m = String(s).match(/(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/); if (!m) return null; return new Date(`${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6] || '00'}+08:00`); };
 const fmt = (v, d = 2, suf = '') => v == null || !Number.isFinite(v) ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d }) + suf;
+/* ---- en3 (2026-10-12): no account AMOUNTS on the public page — returns (%) only; no "Beijing" anywhere ---- */
+const pctS = (v, d = 2) => v == null || !Number.isFinite(v) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('en-US', { maximumFractionDigits: d, minimumFractionDigits: d }) + '%';
+// return since inception = total equity / baseline − 1 (baseline = doubling base of 2026-09-30; total = main + sub-account; internal transfers neutral). Live value from the panel data (cumRet), else the cards JSON.
+const retNow = () => { const c = STATE?.us?.cumRet; if (c != null && Number.isFinite(c)) return c * 100; const r = CARDS?.equity?.returnPct; return r != null ? r : null; };
+const _N = '-?\\d[\\d,]*(?:\\.\\d+)?';
+const AMT_RX = [
+  new RegExp('[$¥￥€]\\s*' + _N + '(?:\\s*(?:[kKmMbBwW]\\b|万|千|亿))?', 'g'),
+  new RegExp('(?<![\\w.])' + _N + '(?=\\s?@)', 'g'),
+  new RegExp(_N + '\\s*(?:[kKmMbB]\\s*)?(?:USDT|USDC|USD|BUSD|FDUSD|dollars?|bucks?|美元|美金|刀|块钱)', 'gi'),
+  new RegExp('(?<![A-Za-z0-9.])' + _N + 'U(?![A-Za-z0-9])', 'g'),
+  new RegExp('(?<![\\w.])' + _N + '\\s*(?:shares?|units?|coins?|tokens?|lots?)\\b', 'gi'),
+  new RegExp('(?<![A-Za-z])(?:fees?|filled|filledTotal|filled_qty|order_qty|qty|quantity|equity|balance|net worth|net value|notional|quote|P&L|PnL|HWM|cash)(?![A-Za-z])[^\\d\\n]{0,12}?(' + _N + ')([%:])?', 'gi'),
+  new RegExp('(?:净值|权益|余额|盈亏|手续费|市值|基数|主账户|子账户|成交额|名义)[^\\d\\n]{0,6}?(' + _N + ')([%:])?', 'g'),
+  new RegExp('(?<![\\w.])[+\\-−]\\d[\\d,]*\\.\\d+(?![\\d.%:])', 'g'),   // signed decimal that is not a percent/time (P&L delta)
+  new RegExp('(?<![\\w.])\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?(?![\\d%:])', 'g'),   // 2,620.85
+];
+const noAmt = t => { if (t == null || typeof t !== 'string') return t; let o = t; for (const rx of AMT_RX) o = o.replace(rx, (...a) => { const g = a.slice(1, -2).filter(x => x !== undefined); return /^[%:]$/.test(g[g.length - 1] || '') ? a[0] : '[hidden]'; }); return o; };
+// bot-written free text: clock times are Beijing wall-clock (team convention) and may be labelled 北京(时间)/BJT/CST/Beijing. nyText converts every
+// HH:MM[:SS] (and 'YYYY-MM-DD HH:MM') to New York and drops the labels; with all=false only label-adjacent times are converted (used on whole cards).
+// `ref` = the item's own Beijing timestamp (gives the date for bare times so EDT/EST is right).
+const BJW = '(?:北京时间|北京|BJT|\\bCST\\b|Beijing(?: time)?)';
+const BJ_RX = new RegExp('(?:\\(?(' + BJW + ')\\)?\\s*)?(?<![\\d:.])(?:(\\d{4}-\\d{2}-\\d{2})[ T])?(\\d{1,2}):(\\d{2})(?::(\\d{2}(?:\\.\\d+)?))?(?![\\d:%])(?:\\s*\\(?(' + BJW + ')\\)?)?', 'g');
+const nyText = (t, ref, all = true) => {
+  if (t == null || typeof t !== 'string' || !/\d{1,2}:\d{2}|北京|Beijing|BJT|\bCST\b/.test(t)) return t;
+  const rd = bjParse(ref) || new Date(), refDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Shanghai' }).format(rd);
+  let o = t.replace(BJ_RX, (m, l1, D, h, mi, sec, l2) => {
+    if (!all && !l1 && !l2) return m;
+    const d = bjParse(`${D || refDay} ${String(h).padStart(2, '0')}:${mi}:00`); if (!d) return m;
+    const st = nyStamp(d), out = D ? st : st.slice(11);
+    return out + (sec ? ':' + sec : '');
+  });
+  return o.replace(new RegExp('\\(?' + BJW + '\\)?\\s*', 'g'), '').replace(/ {2,}/g, ' ');
+};
+const nyFree = t => nyText(t, null, false);
 const pct = (v, d = 2) => v == null || !Number.isFinite(v) ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(d) + '%';
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const kwMatch = (s, kws) => { s = String(s || '').toLowerCase(); return !!s && (kws || []).some(k => s.includes(k.toLowerCase())); };
@@ -297,11 +331,11 @@ function buildFeed() {
     const d = STATE[id], dn = (CFG.districts[id].nameEn || CFG.districts[id].name);
     d.tradeRows.forEach((r, i) => {
       const c = classify(r);
-      const parts = [isLive(r) ? '[LIVE]' : '[PAPER]', r.type, r.order_kind, r.side, r.ticker, r.filled_qty && `filled ${r.filled_qty}`, r.avg_fill_price && `@${r.avg_fill_price}`, r.fee && `fee ${r.fee}`, r.risk_decision && `risk:${r.risk_decision}`, r.signal_id && `signal ${r.signal_id}`, r.realized_pnl_usd && `P&L ${r.realized_pnl_usd}`, r.notes].filter(Boolean);
+      const parts = [isLive(r) ? '[LIVE]' : '[PAPER]', r.type, r.order_kind, r.side, r.ticker, r.avg_fill_price && `@${r.avg_fill_price}`, r.risk_decision && `risk:${r.risk_decision}`, r.signal_id && `signal ${r.signal_id}`, r.realized_pnl_pct_equity && `P&L ${r.realized_pnl_pct_equity}% of equity`, nyText(noAmt(r.notes), r.record_time_cst)].filter(Boolean);
       if (c.isTrade && !gateOK(d, r)) parts.push('(no risk green stamp seen → trader does not go)');
       feed.push({ seq: i, key: `${id}:t:${i}:${r.record_time_cst}:${r.order_id}:${r.type}`, district: id, dn, row: r, time: cstDate(r.record_time_cst), ts: r.record_time_cst, text: parts.join(' · '), ...c });
     });
-    d.hbRows.forEach((r, i) => feed.push({ seq: i, key: `${id}:h:${i}:${r.ts_cst}:${r.ticker}`, district: id, dn, row: r, time: cstDate(r.ts_cst), ts: r.ts_cst, text: `heartbeat ${r.status || ''} ${r.ticker || ''} ${r.last_price ? 'px ' + r.last_price : ''} ${r.equity_usd ? 'equity ' + r.equity_usd : ''} ${r.notes || ''}`.trim(), isTrade: false, isMeet: false }));
+    d.hbRows.forEach((r, i) => feed.push({ seq: i, key: `${id}:h:${i}:${r.ts_cst}:${r.ticker}`, district: id, dn, row: r, time: cstDate(r.ts_cst), ts: r.ts_cst, text: `heartbeat ${r.status || ''} ${r.ticker || ''} ${r.last_price ? 'px ' + r.last_price : ''} ${nyText(noAmt(r.notes || ''), r.ts_cst)}`.trim(), isTrade: false, isMeet: false }));
   }
   feed.sort((a, b) => ((b.time?.getTime() || 0) - (a.time?.getTime() || 0)) || (b.seq - a.seq));
   STATE.feed = feed;
@@ -569,11 +603,11 @@ function drawHubOverlay(b, t, at) {
 function hubLines() {
   const us = STATE.us, L = [];
   if (haltedAny()) L.push({ s: 'Risk halt', c: '#f28a8a' }); else if (dailyAny()) L.push({ s: 'Closed today', c: '#f28a8a' }); else L.push({ s: us.hasData ? '● Running' : 'Awaiting data', c: '#3fd86a' });
-  let eqHub = us.equity; if (eqHub == null) { try { eqHub = CARDS?.equity?.equity ?? null; } catch (_) { eqHub = null; } }
-  L.push({ s: 'Equity ' + (eqHub != null ? '$' + fmt(eqHub, 0) : '—') });
+  const rHub = retNow();
+  L.push({ s: 'Return ' + (rHub != null ? pctS(rHub, 1) : '—') });
   const fills = us.paper.fills + us.live.fills + STATE.crypto.paper.fills + STATE.crypto.live.fills;
   L.push({ s: `Fills: ${fills}` });
-  for (const p of us.positions) if (p.qty != null) L.push({ s: `${p.tk} ${fmt(p.qty, 2)}`, c: '#a0f0f0' });
+  for (const p of us.positions) { const v = p.value ?? (p.qty != null && p.price != null ? p.qty * p.price : null); if (v != null && us.equity) L.push({ s: `${p.tk} ${fmt(v / us.equity * 100, 0)}%`, c: '#a0f0f0' }); }   // en3: weight of equity instead of share quantity
   return L;
 }
 function latestStamp() { const c = anyVis().map(id => STATE[id].stamp).filter(Boolean); c.sort((a, b) => (cstDate(a.time)?.getTime() || 0) - (cstDate(b.time)?.getTime() || 0)); return c.pop() || null; }
@@ -696,7 +730,7 @@ function renderFeed() {
   const us = STATE.us; if (us.signal) { const k = Object.keys(us.signal.signals || {})[0]; if (k) sys.push(`Strategist research signal (backtest output, not a trade) as_of ${us.signal.as_of}: ${k} → ${Object.entries(us.signal.signals[k].weights || {}).map(([a, w]) => `${a} ${(w * 100).toFixed(0)}%`).join(' ')}`); }
   document.getElementById('feedMeta').textContent = `${f.length} log events · checked at ${nyHM(STATE.checkedAt)} New York`;
   ul.innerHTML = sys.map(s => `<li><span class="t">[SYSTEM]</span>${esc(s)}</li>`).join('') +
-    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts ? nyT(e.ts) : '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">No real log events yet — the characters are just wandering around town</li>');
+    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts ? nyT(e.ts) : '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(nyFree(e.text))}</li>`).join('') : '<li class="muted">No real log events yet — the characters are just wandering around town</li>');
   ul.querySelectorAll('li.ev').forEach(li => li.onclick = () => { const e = STATE.feed[+li.dataset.i], d = STATE[e.district]; if (!d.visuals) return; if (e.isMeet) startMeeting(e, null); else if (e.isTrade && gateOK(d, e.row)) startTradeRun(e); });
 }
 /* ---------- 建筑信息卡（数据来自 data/town-cards.json，发布时生成；缺数据显示「暂无」） ---------- */
@@ -734,14 +768,15 @@ function nextRun(sc) {   // schedule.time is Beijing wall-clock "HH:MM"; the sam
 }
 const bjT = s => { if (!s) return NA; return nyT(s); };   // name kept for the many call sites; input is Beijing/ISO, output is New York
 const cRow = (k, v, cls = '') => `<div class="cr ${cls}"><span>${k}</span><b>${v == null || v === '' ? NA : v}</b></div>`;
-const money = v => v == null ? NA : '$' + fmt(v, 2);
-function goalBar(C) {
+const money = () => NA;   // en3: amounts are never shown (kept only so stray callers cannot print one)
+function goalBar(C, retOv) {
   const g = C?.goal, e = C?.equity;
-  if (!g || !g.base || !g.target) return cRow('Double-up goal', NA);
-  const p = e && e.goalProgressPct != null ? Math.max(0, Math.min(100, e.goalProgressPct)) : null;
-  return `<div class="goal"><div class="gl"><span>Double-up goal (${esc(g.deadline || '')})</span><b>${money(g.base)} → ${money(g.target)}</b></div>
+  if (!g) return cRow('Double-up goal', NA);
+  const tgt = g.targetPct || 100, r = retOv != null ? retOv : (e && e.returnPct != null ? e.returnPct : null);
+  const p = r == null ? null : Math.max(0, Math.min(100, r / tgt * 100));
+  return `<div class="goal"><div class="gl"><span>Double-up goal (${esc(g.deadline || '')})</span><b>Return +${tgt}%</b></div>
     <div class="gbar"><i style="width:${p == null ? 0 : Math.max(1, p)}%"></i></div>
-    <div class="gs">Current ${e && e.equity != null ? money(e.equity) : NA} · Progress ${p == null ? NA : fmt(e.goalProgressPct, 2) + '%'} · To go ${e && e.toTarget != null ? money(e.toTarget) : NA}${e && e.ts ? ` · ${esc(bjT(e.ts))}` : ''}</div></div>`;
+    <div class="gs">Return since the 2026-09-30 baseline ${pctS(r)} · ${r == null ? NA : fmt(Math.max(0, tgt - r), 2)} pts to go${e && e.ts ? ` · ${esc(bjT(e.ts))}` : ''}</div></div>`;
 }
 function rulesBlock(R) {
   if (!R || !R.version) return cRow('Risk limits', NA);
@@ -751,7 +786,7 @@ function rulesBlock(R) {
     <div><span>Total crypto cap</span><b>${v(R.cryptoPct)}</b></div><div><span>Daily stop line</span><b>${v(R.dailyStopPct)}</b></div>
     <div><span>Drawdown full-stop line</span><b>${v(R.ddHaltPct)}</b></div><div><span>Trade type</span><b>${R.spotOnly ? 'Spot only' : NA}</b></div></div>`;
 }
-function decLine(d) { return d ? `<b class="ev">${esc(d.eventZh || d.event || '')}</b> ${esc(d.signal || '')}<br><span class="dt">${esc(d.detail || '')}</span><br><small>${esc(bjT(d.ts))} · ${esc(botName(d.by || ''))}</small>` : NA; }
+function decLine(d) { return d ? `<b class="ev">${esc(d.eventZh || d.event || '')}</b> ${esc(d.signal || '')}<br><span class="dt">${esc(nyText(noAmt(d.detail || ''), d.ts))}</span><br><small>${esc(bjT(d.ts))} · ${esc(botName(d.by || ''))}</small>` : NA; }
 function rantFor(bot) { const x = latestRant(bot); if (!x) return ''; return `<div class="crant"><span>☕ Slacking Corner · ${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</span>“${esc(x.text)}”</div>`; }
 const RSTAT = { '未证实': 'gray', '有媒体跟进': 'yellow', '官方证实': 'green', '已辟谣': 'red' };
 const RSTAT_EN = { '未证实': 'Unconfirmed', '有媒体跟进': 'Media follow-up', '官方证实': 'Officially confirmed', '已辟谣': 'Debunked' };
@@ -768,7 +803,7 @@ function rumorHTML() {
   }).join('') + '</ul>';
   h += cRow('Next round', R.next?.ts ? `${esc(bjT(R.next.ts))}${R.next.name ? ' · ' + esc(R.next.name) : ''}` : nextRun2(CARDS?.schedule?.rumor));
   h += cRow('Watchlist', R.watchlist ? `<a href="${esc(R.watchlist)}" target="_blank" rel="noopener">rumor-watchlist.md</a>` : 'N/A (rumor-watchlist.md does not exist)');
-  h += `<div class="cnote">Rumors are leads, not trade signals${R.budgetLeftUsd != null ? ` · X budget left $${fmt(Number(R.budgetLeftUsd), 2)}` : ''} · Source ${esc(R.src || '')}</div>`;
+  h += `<div class="cnote">Rumors are leads, not trade signals · Source ${esc(R.src || '')}</div>`;
   return h;
 }
 function nextRun2(sc) { if (!sc) return NA; if (!sc.times) return nextRun(sc); let best = null; for (const t of sc.times) { const r = nextRun({ time: t, days: sc.days }); const m = r.match(/\(in (?:(\d+)h )?(\d+)m\)/); const mins = m ? (+(m[1] || 0)) * 60 + (+m[2]) : 1e9; if (!best || mins < best.m) best = { r, m: mins }; } return best ? best.r : NA; }
@@ -789,7 +824,7 @@ function showDetail(k, keepFocus) {
   else if (k === 'strategist') {
     const s = C.signal;
     h += cRow('Status', s ? (s.pendingRisk ? '<span class="warnc">Latest signal awaiting risk-officer review</span>' : 'Signal issued') : NA);
-    h += `<div class="csec">Latest signal</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · file updated ${esc(bjT(s.mtime))}</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>Sections: ${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
+    h += `<div class="csec">Latest signal</div>` + (s ? `<div class="cbox"><b>${esc(nyText(noAmt(s.title), s.mtime))}</b><br><small>${esc(s.file)} · file updated ${esc(bjT(s.mtime))}</small>${s.context ? `<p>${esc(nyText(noAmt(s.context), s.mtime))}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(nyText(noAmt(x), s.mtime))}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>Sections: ${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
     h += statusLine('strategist');
     h += cRow('Next routine run', nextRun(C.schedule?.strategist) + (C.schedule?.strategist ? ` · ${esc(C.schedule.strategist.what)}` : ''));
     h += rantFor('strategist') + updatedFoot(['signal', 'decisionLog', 'rants']);
@@ -804,27 +839,27 @@ function showDetail(k, keepFocus) {
   } else if (k === 'trader') {
     const f = C.fills?.length ? C.fills[C.fills.length - 1] : null;
     h += cRow('Status', haltedAny() ? '<span class="warnc">Risk halt: staying inside</span>' : fx.trade ? 'Filling at the Hub' : 'Standing by');
-    h += cRow('Latest fill', f ? `${esc(f.market)} ${esc(f.side)} ${esc(f.ticker)} ${esc(f.qty)} @ ${esc(f.price)}${f.stop ? ` · stop ${esc(f.stop)}` : ''} · ${esc(f.mode || '')}<br><small>${esc(bjT(f.ts))}</small>` : 'No fills yet (0 fills recorded)');
+    h += cRow('Latest fill', f ? `${esc(f.market)} ${esc(f.side)} ${esc(f.ticker)} @ ${esc(f.price)}${f.stop ? ` · stop ${esc(f.stop)}` : ''} · ${esc(f.mode || '')}<br><small>${esc(bjT(f.ts))}</small>` : 'No fills yet (0 fills recorded)');
     const hb = P?.heartbeat; if (hb) h += cRow('Stop monitor', hb.ok ? `${esc(hb.mode || '')} · monitoring ${hb.n_monitored ?? '—'} tickers · ${Object.entries(hb.tickers || {}).map(([t, v]) => `${esc(t)} stop ${v.stop ?? '—'}`).join(', ')}<br><small>heartbeat ${esc(bjT(hb.ts))} · alerts ${esc(hb.alerts || 'none')}</small>` : `<span class="warnc">Unavailable: ${esc(hb.reason || '')}</span>`);
     h += `<div class="csec">Latest action</div><div class="cbox">${decLine(C.traderLast)}</div>`;
     h += cRow('Next execution', nextRun(C.schedule?.trader) + (C.schedule?.trader ? ` · ${esc(C.schedule.trader.what)}` : ''));
     h += rantFor('trader') + updatedFoot(['tradeLog', 'heartbeat', 'decisionLog', 'rants']);
   } else if (k === 'data') {
-    const e = P ? { equity: P.equity?.value, ts: P.equity?.ts, hwm: P.hwm?.value, drawdownPct: P.drawdown?.value, dayPnlPct: P.dayPnl?.value, source: P.equity?.src, file: 'data/us-panel.json (Mac merged snapshot)', goalProgressPct: C.equity?.goalProgressPct, toTarget: C.equity?.toTarget } : (C.equity || {});
+    const e = P ? { ts: P.equity?.ts, ret: retNow(), hwmRet: (P.hwm?.value != null && P.equity?.value && P.cumRet?.value != null) ? (P.hwm.value / (P.equity.value / (1 + P.cumRet.value)) - 1) * 100 : C.equity?.hwmReturnPct, drawdownPct: P.drawdown?.value, dayPnlPct: P.dayPnl?.value } : { ts: C.equity?.ts, ret: C.equity?.returnPct, hwmRet: C.equity?.hwmReturnPct, drawdownPct: C.equity?.drawdownPct, dayPnlPct: C.equity?.dayPnlPct };
     h += cRow('Status', dataStale() ? `<span class="warnc">Data stale: ${esc(STATE.us?.staleReason || 'heartbeat missing')}</span>` : 'Data fresh');
-    h += cRow('Latest equity', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
-    h += cRow('Equity high (HWM)', money(e.hwm)) + cRow('Current drawdown', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('Today\'s P&L', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
-    h += goalBar(P ? { ...C, equity: { ...C.equity, equity: e.equity, ts: e.ts, goalProgressPct: C.goal?.base && C.goal?.target && e.equity != null ? (e.equity - C.goal.base) / (C.goal.target - C.goal.base) * 100 : null, toTarget: C.goal?.target && e.equity != null ? C.goal.target - e.equity : null } } : C);
-    if (C.dataReport) h += `<div class="csec">Latest daily report</div><div class="cbox"><b>${esc(C.dataReport.title)}</b><br>${esc(C.dataReport.summary || '')}<br><small>${esc(C.dataReport.file)} · ${esc(bjT(C.dataReport.mtime))}</small></div>`;
-    if (e.source) h += `<div class="cnote">Basis: ${esc(e.source)} (${esc(e.file || 'data/equity-hwm.csv')})</div>`;
+    h += cRow('Return since baseline', e.ret != null ? `${pctS(e.ret)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
+    h += cRow('Peak return (HWM)', e.hwmRet == null ? NA : pctS(e.hwmRet)) + cRow('Current drawdown', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('Today\'s P&L', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
+    h += goalBar(C, e.ret);
+    if (C.dataReport) h += `<div class="csec">Latest daily report</div><div class="cbox"><b>${esc(nyText(noAmt(C.dataReport.title), C.dataReport.mtime))}</b><br>${esc(nyText(noAmt(C.dataReport.summary || ''), C.dataReport.mtime))}<br><small>${esc(C.dataReport.file)} · ${esc(bjT(C.dataReport.mtime))}</small></div>`;
+    h += `<div class="cnote">Basis: return = total equity (main + sub-account, marked to bid) vs the 2026-09-30 baseline; internal transfers are not profit.</div>`;
     h += cRow('Next routine run', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
     h += rantFor('data') + updatedFoot(['snapshot', 'panel', 'report', 'rants']);
   } else if (k === 'hub') {
     h += cRow('Status', haltedAny() ? '<span class="warnc">Roadblock: full risk stop</span>' : dailyAny() ? '<span class="warnc">Closed for today</span>' : 'Open (this page is read-only and not connected to any exchange)');
-    if (P?.snapshot?.ok) { h += `<div class="csec">Holdings (spot + funding combined · ${esc(nyHM(new Date(P.snapshot.taken_at)))} New York)</div><table class="ctab"><tr><th>Asset</th><th>Qty</th><th>Value</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(x.asset)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td><td>${x.value != null ? fmt(x.value) : '—'}</td></tr>`).join('')}<tr><td><b>Total</b></td><td></td><td><b>${fmt(P.snapshot.total)}</b></td></tr></table>`; }
+    if (P?.snapshot?.ok) { const tot = P.snapshot.total || P.snapshot.items.reduce((q, x) => q + (x.value || 0), 0); h += `<div class="csec">Holdings (spot + funding combined · ${esc(nyHM(new Date(P.snapshot.taken_at)))} New York)</div><table class="ctab"><tr><th>Asset</th><th>Weight</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(String(x.asset).replace('Agentic子账户', 'Agentic sub-account'))}</td><td>${x.value != null && tot ? fmt(x.value / tot * 100, 1) + '%' : '—'}</td></tr>`).join('')}</table>`; }
     else h += `<div class="csec">Holdings (latest snapshot${C.holdingsAt ? ' · ' + esc(nyHM(new Date(C.holdingsAt))) + ' New York' : ''})</div>`;
-    if (!P?.snapshot?.ok) h += C.holdings?.length ? `<table class="ctab"><tr><th>Asset</th><th>Account</th><th>Qty</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
-    h += rulesBlock(C.rules) + goalBar(C);
+    if (!P?.snapshot?.ok) h += C.holdings?.length ? `<table class="ctab"><tr><th>Asset</th><th>Account</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
+    h += rulesBlock(C.rules) + goalBar(C, retNow());
     h += cRow('Fill count', C.fillCount == null ? NA : `${C.fillCount}${C.fillsToday != null && C.fillsTodayCap ? ` (today ${C.fillsToday}/${C.fillsTodayCap})` : ''}`);
     h += rantFor('designer') + updatedFoot(['snapshot', 'tradeLog']);
   } else if (k === 'warroom') {
@@ -837,7 +872,7 @@ function showDetail(k, keepFocus) {
     h += rumorHTML() + rantFor('rumor') + updatedFoot(['rumor']);
   }
   const m = document.getElementById('card');
-  m.querySelector('.cbody').innerHTML = `<div class="chead" style="--c:${colors[k]}"><h2>${esc(names[k])}</h2><div class="crole">${esc(role)}</div></div>${h}<div class="cfoot">Data generated at ${C ? esc(bjT(C.generated_at.slice(0, 16))) : NA} · Only real records are shown; missing data reads "N/A"</div>`;
+  m.querySelector('.cbody').innerHTML = nyFree(`<div class="chead" style="--c:${colors[k]}"><h2>${esc(names[k])}</h2><div class="crole">${esc(role)}</div></div>${h}<div class="cfoot">Data generated at ${C ? esc(bjT(C.generated_at.slice(0, 16))) : NA} · Only real records are shown; missing data reads "N/A"</div>`);
   m.hidden = false; document.body.classList.add('cardopen'); if (!keepFocus) m.querySelector('.cclose').focus({ preventScroll: true });
 }
 function closeCard() { CUR_CARD = null; const m = document.getElementById('card'); m.hidden = true; document.body.classList.remove('cardopen'); }
