@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-12T11:16:11+08:00",
+ "generated_at": "2026-10-12T11:35:29+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -13,7 +13,7 @@
  "goal": {
   "base": 2462.0,
   "target": 4925.0,
-  "deadline": "2026 年底"
+  "deadline": "end of 2026"
  },
  "equity": {
   "ts": "2026-10-12T11:16+08:00",
@@ -22,7 +22,7 @@
   "drawdownPct": 1.28,
   "dayPnlPct": 0.48,
   "source": "Mac 定时只读快照 11:15（现货+资金账户，自动计算）+Agentic 子账户 100.00 USDC（数据官账本最后一行 10/12 08:46）；BTC/ETH=币安 USDC 对买一；LITE 1112.62 / TSLA 384.64=币安股票报价买一；最高点=max(账本HWM, 站点观测)",
-  "file": "site-equity.json（站点自算，非团队账本）",
+  "file": "site-equity.json (computed for the site; not the team ledger)",
   "goalProgressPct": 5.19,
   "toTarget": 2335.28
  },
@@ -58,7 +58,7 @@
   "event": "exec_complete",
   "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
   "by": "交易员/数据官对账",
-  "eventZh": "执行完成"
+  "eventZh": "Execution complete"
  },
  "decisionLast": {
   "ts": "2026-10-12T08:42+08:00",
@@ -71,7 +71,7 @@
  "fills": [
   {
    "ts": "2026-10-01 21:57:44 CST",
-   "market": "美股",
+   "market": "US",
    "ticker": "NBIS",
    "side": "BUY",
    "qty": "0.294",
@@ -81,7 +81,7 @@
   },
   {
    "ts": "2026-10-05 09:57:30 CST",
-   "market": "加密",
+   "market": "Crypto",
    "ticker": "BTCUSDC",
    "side": "BUY",
    "qty": "0.00076",
@@ -91,7 +91,7 @@
   },
   {
    "ts": "2026-10-05 09:57:41 CST",
-   "market": "加密",
+   "market": "Crypto",
    "ticker": "ETHUSDC",
    "side": "BUY",
    "qty": "0.0246",
@@ -101,7 +101,7 @@
   },
   {
    "ts": "2026-10-05 21:41:38 CST",
-   "market": "美股",
+   "market": "US",
    "ticker": "QQQ",
    "side": "BUY",
    "qty": "0.22",
@@ -111,7 +111,7 @@
   },
   {
    "ts": "2026-10-05 21:42:02 CST",
-   "market": "美股",
+   "market": "US",
    "ticker": "NBIS",
    "side": "BUY",
    "qty": "0.15",
@@ -130,79 +130,79 @@
    "asset": "EQ_LITE",
    "ticker": "LITE",
    "qty": 0.70944698,
-   "wallet": "资金账户"
+   "wallet": "Funding"
   },
   {
    "asset": "EQ_TSLA",
    "ticker": "TSLA",
    "qty": 1.93546688,
-   "wallet": "资金账户"
-  },
-  {
-   "asset": "BTC",
-   "ticker": null,
-   "qty": 0.00072858,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "ETH",
-   "ticker": null,
-   "qty": 5.494e-05,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "ETHFI",
-   "ticker": null,
-   "qty": 0.0026,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "FDUSD",
-   "ticker": null,
-   "qty": 0.015,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "QQQB",
-   "ticker": null,
-   "qty": 0.0009,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "USDC",
-   "ticker": null,
-   "qty": 500.62585819,
-   "wallet": "现货账户"
-  },
-  {
-   "asset": "USDT",
-   "ticker": null,
-   "qty": 1.22528875,
-   "wallet": "现货账户"
+   "wallet": "Funding"
   },
   {
    "asset": "ACM",
    "ticker": null,
    "qty": 0.00084611,
-   "wallet": "资金账户"
+   "wallet": "Funding"
   },
   {
    "asset": "NBISB",
    "ticker": null,
    "qty": 0.444,
-   "wallet": "资金账户"
+   "wallet": "Funding"
   },
   {
    "asset": "QQQB",
    "ticker": null,
    "qty": 0.378,
-   "wallet": "资金账户"
+   "wallet": "Funding"
   },
   {
    "asset": "USDC",
    "ticker": null,
    "qty": 7.63,
-   "wallet": "资金账户"
+   "wallet": "Funding"
+  },
+  {
+   "asset": "BTC",
+   "ticker": null,
+   "qty": 0.00072858,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "ETH",
+   "ticker": null,
+   "qty": 5.494e-05,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "ETHFI",
+   "ticker": null,
+   "qty": 0.0026,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "FDUSD",
+   "ticker": null,
+   "qty": 0.015,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "QQQB",
+   "ticker": null,
+   "qty": 0.0009,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "USDC",
+   "ticker": null,
+   "qty": 500.62585819,
+   "wallet": "Spot"
+  },
+  {
+   "asset": "USDT",
+   "ticker": null,
+   "qty": 1.22528875,
+   "wallet": "Spot"
   }
  ],
  "holdingsAt": "2026-10-12T11:15:45.052201+08:00",
@@ -210,22 +210,22 @@
   "strategist": {
    "time": "20:17",
    "days": "daily",
-   "what": "每日策略更新"
+   "what": "Daily strategy update"
   },
   "data": {
    "time": "08:44",
    "days": "daily",
-   "what": "每日数据快照 + 日报（含翻倍进度）"
+   "what": "Daily data snapshot + daily report (incl. double-up progress)"
   },
   "atlas": {
    "time": "20:02",
    "days": "daily",
-   "what": "Atlas 下发当日目标"
+   "what": "Atlas sets the day's targets"
   },
   "trader": {
    "time": "21:37",
    "days": "weekdays",
-   "what": "美股开盘后执行已放行的订单"
+   "what": "Executes approved orders after the US open"
   },
   "rumor": {
    "times": [
@@ -237,7 +237,7 @@
     "23:38"
    ],
    "days": "daily",
-   "what": "流言更新（X 市场传闻）"
+   "what": "Rumor update (market chatter on X)"
   }
  },
  "botLatest": {
@@ -263,7 +263,7 @@
    "event": "exec_complete",
    "detail": "NBIS BUY 0.15@239.458 FILLED 35.92 fee0.17; NBISB FUNDING 0.444; HB 21:44 held对齐; day 2/10",
    "by": "交易员/数据官对账",
-   "eventZh": "执行完成"
+   "eventZh": "Execution complete"
   },
   "data": {
    "ts": "2026-10-12T08:42+08:00",
@@ -291,19 +291,19 @@
   "snapshot": "2026-10-12T11:15:45.052201+08:00",
   "heartbeat": "2026-10-12T11:13:02+08:00",
   "panel": "2026-10-12T11:16:05+08:00",
-  "rants": "2026-10-12 10:24 北京",
+  "rants": "2026-10-12 11:28 北京",
   "report": "2026-10-12 08:48",
   "rumor": null,
   "feedSync": "2026-10-12 10:24:45 北京 (box feed_bundle."
  },
  "roles": {
-  "strategist": "研究市场、出交易信号（标的、仓位、止损、理由）",
-  "risk": "按 RULES.md 自动审核每个信号：放行或否决",
-  "trader": "执行风控放行的订单（含止损），记录每一笔成交",
-  "data": "记账、对账、盯权益与回撤，出日报和翻倍进度",
-  "warroom": "信号审议会议室：策略官提案、风控官盖章",
-  "hub": "交易所代表建筑（本页只读，不连接交易所）",
-  "rumor": "盯 X 上的市场传闻，每天 6 次更新（流言是线索，不是交易信号）"
+  "strategist": "Researches the market and issues trade signals (ticker, size, stop, rationale)",
+  "risk": "Automatically reviews every signal against RULES.md: approve or reject",
+  "trader": "Executes risk-approved orders (incl. stops) and records every fill",
+  "data": "Bookkeeping, reconciliation, watches equity and drawdown, publishes the daily report and double-up progress",
+  "warroom": "Signal review room: the Strategist proposes, the Risk Officer stamps",
+  "hub": "Building that represents the exchange (this page is read-only and not connected to any exchange)",
+  "rumor": "Watches market chatter on X, updated 6 times a day (rumors are leads, not trade signals)"
  },
- "dataPipeline": "每 30 分钟由 Mac 上的定时脚本自动刷新（只读快照 + 公开价格，无 AI）；成交/信号在团队同步日志后更新"
+ "dataPipeline": "Refreshed every 30 min by a scheduled script on the Mac (read-only snapshot + public prices, no AI); fills/signals update after the team syncs its logs"
 }

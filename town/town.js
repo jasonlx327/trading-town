@@ -278,14 +278,14 @@ function gateOK(d, r) { return decisionOf(r) === 'approved' || (r.signal_id && d
 function buildFeed() {
   const feed = [];
   for (const id of DISTRICTS) {
-    const d = STATE[id], dn = CFG.districts[id].name;
+    const d = STATE[id], dn = (CFG.districts[id].nameEn || CFG.districts[id].name);
     d.tradeRows.forEach((r, i) => {
       const c = classify(r);
-      const parts = [isLive(r) ? '[实盘]' : '[纸上]', r.type, r.order_kind, r.side, r.ticker, r.filled_qty && `成交 ${r.filled_qty}`, r.avg_fill_price && `@${r.avg_fill_price}`, r.fee && `费 ${r.fee}`, r.risk_decision && `风控:${r.risk_decision}`, r.signal_id && `信号 ${r.signal_id}`, r.realized_pnl_usd && `盈亏 ${r.realized_pnl_usd}`, r.notes].filter(Boolean);
-      if (c.isTrade && !gateOK(d, r)) parts.push('（未见风控绿章 → 交易员不出发）');
+      const parts = [isLive(r) ? '[LIVE]' : '[PAPER]', r.type, r.order_kind, r.side, r.ticker, r.filled_qty && `filled ${r.filled_qty}`, r.avg_fill_price && `@${r.avg_fill_price}`, r.fee && `fee ${r.fee}`, r.risk_decision && `risk:${r.risk_decision}`, r.signal_id && `signal ${r.signal_id}`, r.realized_pnl_usd && `P&L ${r.realized_pnl_usd}`, r.notes].filter(Boolean);
+      if (c.isTrade && !gateOK(d, r)) parts.push('(no risk green stamp seen → trader does not go)');
       feed.push({ seq: i, key: `${id}:t:${i}:${r.record_time_cst}:${r.order_id}:${r.type}`, district: id, dn, row: r, time: cstDate(r.record_time_cst), ts: r.record_time_cst, text: parts.join(' · '), ...c });
     });
-    d.hbRows.forEach((r, i) => feed.push({ seq: i, key: `${id}:h:${i}:${r.ts_cst}:${r.ticker}`, district: id, dn, row: r, time: cstDate(r.ts_cst), ts: r.ts_cst, text: `心跳 ${r.status || ''} ${r.ticker || ''} ${r.last_price ? '价 ' + r.last_price : ''} ${r.equity_usd ? '权益 ' + r.equity_usd : ''} ${r.notes || ''}`.trim(), isTrade: false, isMeet: false }));
+    d.hbRows.forEach((r, i) => feed.push({ seq: i, key: `${id}:h:${i}:${r.ts_cst}:${r.ticker}`, district: id, dn, row: r, time: cstDate(r.ts_cst), ts: r.ts_cst, text: `heartbeat ${r.status || ''} ${r.ticker || ''} ${r.last_price ? 'px ' + r.last_price : ''} ${r.equity_usd ? 'equity ' + r.equity_usd : ''} ${r.notes || ''}`.trim(), isTrade: false, isMeet: false }));
   }
   feed.sort((a, b) => ((b.time?.getTime() || 0) - (a.time?.getTime() || 0)) || (b.seq - a.seq));
   STATE.feed = feed;
@@ -310,7 +310,7 @@ async function refresh() {
   STATE.firstLoad = false;
   await loadRants(); await loadCards(); await loadRumor();
   if (CUR_CARD && !document.getElementById('card').hidden) showDetail(CUR_CARD, true);  // 打开着的信息卡跟着数据刷新
-  if (BUNDLE) document.getElementById('dataGen').textContent = ` · 公开版数据包生成于 ${hhmm(new Date(BUNDLE.generated_at))} 北京（每 30 分钟自动刷新余额与价格；成交在日志同步后更新）`;
+  if (BUNDLE) document.getElementById('dataGen').textContent = ` · Public data bundle generated ${hhmm(new Date(BUNDLE.generated_at))} Beijing time (balances and prices auto-refresh every 30 min; fills update after log sync)`;
   renderPanels(); renderFeed();
 }
 
@@ -395,6 +395,10 @@ function updateChars(dt, now) {
 
 /* ---------- 摸鱼角 · 吐槽墙（data/rants.json，改数据不改代码） ---------- */
 let RANTS = null, RANT_SIG = '', RANT_BUBBLE = null, rantTimers = [];
+// display-only English names for the bots (rants.json carries the Chinese role names; data untouched)
+const BOT_EN = { '策略官': 'Strategist', '风控官': 'Risk Officer', '交易员': 'Trader', '数据官': 'Data Officer', 'Atlas 总指挥': 'Atlas (Chief)', '设计官': 'Designer', '流言官': 'Rumor Officer' };
+const botName = n => BOT_EN[n] || n;
+const badgeOf = (b, nm) => (b.badge && /^[\x20-\x7e]+$/.test(b.badge)) ? b.badge : String(botName(nm))[0];
 async function loadRants() {
   if (!CFG.rants) return;
   const r = await fetchJSON(CFG.rants.src); if (!r || !Array.isArray(r.rants)) return;
@@ -404,17 +408,17 @@ const rantsOf = bot => (RANTS?.rants || []).filter(x => x.bot === bot && x.text)
 function renderRantWall() {
   const wrap = document.getElementById('rants'); if (!wrap || !RANTS) return;
   rantTimers.forEach(clearInterval); rantTimers = [];
-  document.getElementById('rantMeta').textContent = RANTS.updated ? `更新于 ${RANTS.updated}` : '';
+  document.getElementById('rantMeta').textContent = RANTS.updated ? `Updated ${String(RANTS.updated).replace(/\s*北京$/, ' Beijing')}` : '';
   const BOTS = RANTS.bots || {};
   // 摸鱼角显示 rants.json 里的每一条（同一个 bot 可以有多条），按时间新→旧，最多 5 条
   const list = (RANTS.rants || []).map((x, i) => ({ x, i })).filter(o => o.x && o.x.text && o.x.bot)
     .sort((a, b) => { const ta = Date.parse(a.x.ts || '') || 0, tb = Date.parse(b.x.ts || '') || 0; return (tb - ta) || (b.i - a.i); })
     .slice(0, 5).map(o => o.x);
-  if (!list.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>'; rantAllUI(); return; }
+  if (!list.length) { wrap.innerHTML = '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ Nobody is slacking off right now</div>'; rantAllUI(); return; }
   wrap.innerHTML = list.map(x => {
     const b = BOTS[x.bot] || { name: String(x.bot) }, nm = b.name || String(x.bot);
-    const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(b.badge || nm[0])}</div>`;
-    return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(nm)} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
+    const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(badgeOf(b, nm))}</div>`;
+    return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(botName(nm))} <small>${esc(b.title || '')}</small></div><div class="rt"></div><div class="rd"></div></div></div>`;
   }).join('');
   wrap.querySelectorAll('.rant').forEach((el, i) => {
     const x = list[i];
@@ -428,15 +432,15 @@ let RANT_ALL_OPEN = false, RANTS_ALL = null;
 const rantAllSrc = () => CFG.rants?.allSrc || String(CFG.rants?.src || '').replace(/rants\.json(\?.*)?$/, 'rants-all.json');
 const rantCardHTML = (x, BOTS) => {
   const b = BOTS[x.bot] || { name: String(x.bot) }, nm = b.name || String(x.bot);
-  const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(b.badge || nm[0])}</div>`;
-  return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(nm)} <small>${esc(b.title || '')}</small></div><div class="rt">“${esc(x.text)}”</div><div class="rd">${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</div></div></div>`;
+  const av = b.sprite ? `<div class="av" style="background-image:url('${esc(b.sprite)}')"></div>` : `<div class="av badge" style="background:${esc(b.color || '#d9a21b')}">${esc(badgeOf(b, nm))}</div>`;
+  return `<div class="rant" data-bot="${esc(x.bot)}" style="--c:${esc(b.color || '#d9a21b')}">${av}<div class="rb"><div class="rn">${esc(botName(nm))} <small>${esc(b.title || '')}</small></div><div class="rt">“${esc(x.text)}”</div><div class="rd">${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</div></div></div>`;
 };
 function rantAllUI() {
   const wrap = document.getElementById('rants'); if (!wrap) return;
   let bar = document.getElementById('rantAllBar'), box = document.getElementById('rantsAll');
   if (!bar) {
     bar = document.createElement('div'); bar.id = 'rantAllBar'; bar.style.cssText = 'margin-top:10px;text-align:center';
-    bar.innerHTML = '<button type="button" id="rantAllBtn" style="font:inherit;font-size:14px;font-weight:800;cursor:pointer;background:#d9a21b;color:#1a1423;border:3px solid #1a1423;box-shadow:inset 0 -3px 0 #a87a10;padding:4px 14px">展开全部</button>';
+    bar.innerHTML = '<button type="button" id="rantAllBtn" style="font:inherit;font-size:14px;font-weight:800;cursor:pointer;background:#d9a21b;color:#1a1423;border:3px solid #1a1423;box-shadow:inset 0 -3px 0 #a87a10;padding:4px 14px">Show all</button>';
     box = document.createElement('div'); box.id = 'rantsAll'; box.className = 'rants'; box.style.display = 'none';
     box.style.maxHeight = '70vh'; box.style.overflowY = 'auto'; box.style.paddingRight = '4px';
     wrap.after(box); box.after(bar);
@@ -445,7 +449,7 @@ function rantAllUI() {
   showRantAll();
 }
 async function loadRantsAll() {
-  const btn = document.getElementById('rantAllBtn'); if (btn && !RANTS_ALL) btn.textContent = '加载中…';
+  const btn = document.getElementById('rantAllBtn'); if (btn && !RANTS_ALL) btn.textContent = 'Loading…';
   const r = await fetchJSON(rantAllSrc() + (rantAllSrc().includes('?') ? '&' : '?') + 't=' + Date.now());
   if (r && Array.isArray(r.rants)) RANTS_ALL = r;
   showRantAll();
@@ -456,11 +460,11 @@ function showRantAll() {
     .sort((a, b) => { const ta = Date.parse(a.x.ts || '') || 0, tb = Date.parse(b.x.ts || '') || 0; return (tb - ta) || (a.i - b.i); }).map(o => o.x);
   if (RANT_ALL_OPEN && RANTS_ALL) {
     const BOTS = { ...(RANTS?.bots || {}), ...(RANTS_ALL.bots || {}) };
-    box.innerHTML = all.length ? all.map(x => rantCardHTML(x, BOTS)).join('') : '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ 暂时没人摸鱼</div>';
-    box.style.display = ''; wrap.style.display = 'none'; btn.textContent = `收起（共 ${all.length} 条）`;
+    box.innerHTML = all.length ? all.map(x => rantCardHTML(x, BOTS)).join('') : '<div class="rant-empty" style="grid-column:1/-1;padding:18px 12px;text-align:center;opacity:.75">☕ Nobody is slacking off right now</div>';
+    box.style.display = ''; wrap.style.display = 'none'; btn.textContent = `Collapse (${all.length} total)`;
   } else {
-    if (RANT_ALL_OPEN && !RANTS_ALL) { btn.textContent = '暂时读不到全部吐槽，点此重试'; RANT_ALL_OPEN = false; }
-    else btn.textContent = RANTS_ALL ? `展开全部（${all.length} 条）` : '展开全部';
+    if (RANT_ALL_OPEN && !RANTS_ALL) { btn.textContent = 'Can\'t load all rants right now — click to retry'; RANT_ALL_OPEN = false; }
+    else btn.textContent = RANTS_ALL ? `Show all (${all.length})` : 'Show all';
     box.style.display = 'none'; wrap.style.display = '';
   }
 }
@@ -488,9 +492,9 @@ function drawBubble(now) {
 }
 function drawRantSign() { // 海滩上的「摸鱼角」小牌子
   const s = CFG.rants?.sign || [322, 304]; const x = X(s[0]), y = X(s[1]);
-  ctx.fillStyle = '#1a1423'; ctx.fillRect(x - 44, y - 12, 88, 24); ctx.fillStyle = '#2b2433'; ctx.fillRect(x - 42, y - 10, 84, 20); ctx.fillStyle = '#d9a21b'; ctx.fillRect(x - 42, y - 10, 84, 2);
+  ctx.fillStyle = '#1a1423'; ctx.fillRect(x - 64, y - 12, 128, 24); ctx.fillStyle = '#2b2433'; ctx.fillRect(x - 62, y - 10, 124, 20); ctx.fillStyle = '#d9a21b'; ctx.fillRect(x - 62, y - 10, 124, 2);
   ctx.fillStyle = '#6b4a2a'; ctx.fillRect(x - 3, y + 12, 6, 14);
-  text('☕ 摸鱼角', x, y + 1, '#f5d44a', 12);
+  text('☕ Slacking Corner', x, y + 1, '#f5d44a', 12);
 }
 
 /* ---------- 绘制 ---------- */
@@ -520,8 +524,8 @@ function drawBuilding(k, t) {
   if (k === 'risk') { const d = worstRisk(); const state = d ? d.state : 'off'; at('riskLamp', { im: IMG[`s:riskLamp:${state}`], frames: 2, frame: state === 'off' ? 0 : animF(2, 2, t) }); }
   if (k === 'data') { const stale = dataStale(); at(stale ? 'dataLampStale' : 'dataLampOk'); if (stale) img(IMG['s:iconStale'], b.x + b.w / 2 - 8, b.y - 18); }
   if (k === 'warroom') drawWarRoomOverlay(b, t);
-  if (k === 'rumor') { const R = rumorData(); const n = R && R.ts ? (R.count ?? (R.items || []).length) : null; text(n == null ? '流言塔 · 待开播' : n ? `📰 新流言 ${n} 条` : '流言塔 · 本轮无新料', X(b.x + b.w / 2), X(b.y) - 8, n ? '#f5d44a' : '#a7a9b8'); }
-  if (k === 'trader' && haltedAny()) text('交易员留守（风控暂停）', X(b.x + b.w / 2), X(b.y) - 10, '#f28a8a');
+  if (k === 'rumor') { const R = rumorData(); const n = R && R.ts ? (R.count ?? (R.items || []).length) : null; text(n == null ? 'Rumor Tower · Not live yet' : n ? `📰 ${n} new rumor${n === 1 ? '' : 's'}` : 'Rumor Tower · Nothing new', X(b.x + b.w / 2), X(b.y) - 8, n ? '#f5d44a' : '#a7a9b8'); }
+  if (k === 'trader' && haltedAny()) text('Trader on standby (risk halt)', X(b.x + b.w / 2), X(b.y) - 10, '#f28a8a');
 }
 function worstRisk() { // 可见街区中回撤最深者；无数据/过期 → 灯灭
   let best = null;
@@ -537,15 +541,15 @@ function drawHubOverlay(b, t, at) {
   const line = lines[Math.floor(t / 3) % lines.length];
   ctx.save(); ctx.beginPath(); ctx.rect(X(b.x + sx), X(b.y + sy), X(sw), X(sh)); ctx.clip();
   text(line.s, X(b.x + sx + sw / 2), X(b.y + sy + sh / 2) + 1, line.c || '#f5d44a', 12); ctx.restore();
-  if (fx.trade) { const tr = fx.trade; text(`${CFG.districts[tr.ev.district].name}${tr.live ? '实盘' : '纸上'}成交 ${tr.ev.row.side || ''} ${tr.ev.row.ticker || ''}`, X(b.x + b.w / 2), X(b.y) - 12, '#f5d44a'); }
+  if (fx.trade) { const tr = fx.trade; text(`${CFG.districts[tr.ev.district].nameEn || CFG.districts[tr.ev.district].name} ${tr.live ? 'LIVE' : 'PAPER'} fill ${tr.ev.row.side || ''} ${tr.ev.row.ticker || ''}`, X(b.x + b.w / 2), X(b.y) - 12, '#f5d44a'); }
 }
 function hubLines() {
   const us = STATE.us, L = [];
-  if (haltedAny()) L.push({ s: '风控暂停', c: '#f28a8a' }); else if (dailyAny()) L.push({ s: '今日休市', c: '#f28a8a' }); else L.push({ s: us.hasData ? '● 运行中' : '待数据', c: '#3fd86a' });
+  if (haltedAny()) L.push({ s: 'Risk halt', c: '#f28a8a' }); else if (dailyAny()) L.push({ s: 'Closed today', c: '#f28a8a' }); else L.push({ s: us.hasData ? '● Running' : 'Awaiting data', c: '#3fd86a' });
   let eqHub = us.equity; if (eqHub == null) { try { eqHub = CARDS?.equity?.equity ?? null; } catch (_) { eqHub = null; } }
-  L.push({ s: '权益 ' + (eqHub != null ? '$' + fmt(eqHub, 0) : '—') });
+  L.push({ s: 'Equity ' + (eqHub != null ? '$' + fmt(eqHub, 0) : '—') });
   const fills = us.paper.fills + us.live.fills + STATE.crypto.paper.fills + STATE.crypto.live.fills;
-  L.push({ s: `成交 ${fills} 笔` });
+  L.push({ s: `Fills: ${fills}` });
   for (const p of us.positions) if (p.qty != null) L.push({ s: `${p.tk} ${fmt(p.qty, 2)}`, c: '#a0f0f0' });
   return L;
 }
@@ -557,12 +561,12 @@ function drawWarRoomOverlay(b, t) {
   img(IMG['s:reviewBoardCard'] || IMG['s:reviewBoard'], bx, by);
   const [rx, ry, rw, rh] = st.reasonStrip.textRectInBoard;
   let msg = '', col = '#fff1a8';
-  if (m) { const inside = chars.filter(c => c.node === 'warroom' && c.hidden).length; msg = `审议中 ${inside}人 ${m.ev.row.ticker || ''}`; }
+  if (m) { const inside = chars.filter(c => c.node === 'warroom' && c.hidden).length; msg = `In session: ${inside} ${m.ev.row.ticker || ''}`; }
   else if (s.state === 'approved' || s.state === 'rejected') {
     const ok = s.state === 'approved', sp = ok ? st.stampApprove : st.stampReject;
     img(IMG[ok ? 's:stampApprove' : 's:stampReject'], bx + sp.offsetInBoard[0], by + sp.offsetInBoard[1]);
     msg = `${s.signal || ''} ${s.reason || ''}`.trim(); col = ok ? '#3fd86a' : '#f28a8a';
-  } else msg = `待审 ${s.signal || ''}`;
+  } else msg = `Pending review ${s.signal || ''}`;
   img(IMG['s:reasonStrip'], bx + st.reasonStrip.offsetInBoard[0], by + st.reasonStrip.offsetInBoard[1]);
   ctx.save(); ctx.beginPath(); ctx.rect(X(bx + rx), X(by + ry), X(rw), X(rh)); ctx.clip();
   text(msg, X(bx + rx) + 2, X(by + ry + rh / 2) + 1, col, 12, 'left'); ctx.restore();
@@ -582,7 +586,7 @@ function drawChar(c, t) {
   const cols = moving ? ac.walkCols : ac.idleCols, col = cols[Math.floor(t * (moving ? ac.walkFps : ac.idleFps) + c.phase) % cols.length];
   const sh = IMG['shadow']; if (sh) img(sh, c.x - 8, c.y - 3);
   if (sheet) { ctx.save(); if (paper && !IMG['cs:trader_paper']) ctx.globalAlpha = 0.55; ctx.drawImage(sheet, col * ac.frameW, row * ac.frameH, ac.frameW, ac.frameH, X(c.x - ax), X(c.y - ay), X(ac.frameW), X(ac.frameH)); ctx.restore(); }
-  if (paper) text('纸上', X(c.x + 16), X(c.y - 20), '#a0f0f0', 12, 'left');
+  if (paper) text('PAPER', X(c.x + 16), X(c.y - 20), '#a0f0f0', 12, 'left');
 }
 function frame(nowT) {
   const dt = Math.min(0.1, (nowT - lastT) / 1000); lastT = nowT; const t = nowT / 1000;
@@ -596,8 +600,8 @@ function frame(nowT) {
   items.push({ y: (CFG.rants?.sign || [322, 304])[1] + 26, d: drawRantSign });
   items.sort((a, b) => a.y - b.y).forEach(o => o.d());
   drawHover(t); tickBubble(Date.now()); drawBubble(Date.now());
-  for (const l of CFG.layout.sideLabels || []) { const off = l.district === 'crypto' && !STATE.crypto.hasData; text(l.text + (off ? '（待接入）' : ''), X(l.x), X(l.y), off ? '#a7a9b8' : '#fff1a8'); }
-  document.getElementById('clock').textContent = new Date().toLocaleString('zh-CN', { hour12: false, timeZone: 'Asia/Shanghai' }) + ' 北京时间';
+  for (const l of CFG.layout.sideLabels || []) { const off = l.district === 'crypto' && !STATE.crypto.hasData; text(l.text + (off ? ' (not connected yet)' : ''), X(l.x), X(l.y), off ? '#a7a9b8' : '#fff1a8'); }
+  document.getElementById('clock').textContent = new Date().toLocaleString('sv-SE', { hour12: false, timeZone: 'Asia/Shanghai' }) + ' Beijing time';
   requestAnimationFrame(frame);
 }
 let lastT = performance.now();
@@ -665,11 +669,11 @@ function renderPanels() {
 }
 function renderFeed() {
   const ul = document.getElementById('feed'), f = STATE.feed, sys = [];
-  for (const id of DISTRICTS) { const d = STATE[id], n = CFG.districts[id].name; if (!d.trades) sys.push(`${n}: ${short(d.src.tradeLog)} 尚不存在 — ${CFG.districts[id].placeholderLabel}`); else if (!d.tradeRows.length) sys.push(`${n}: ${short(d.src.tradeLog)} 暂无记录（0 行）`); if (d.hb && !d.hbRows.length) sys.push(`${n}: ${short(d.src.heartbeat)} 暂无心跳（0 行）`); if (d.visuals && d.riskHalt) sys.push(`${n}: 风控暂停 — ${d.riskHaltReason}（仅用户可恢复）`); if (d.visuals && d.dailyHalt) sys.push(`${n}: 今日休市 — ${d.dailyHaltReason}`); }
-  const us = STATE.us; if (us.signal) { const k = Object.keys(us.signal.signals || {})[0]; if (k) sys.push(`策略官研究信号（回测输出，非交易）as_of ${us.signal.as_of}: ${k} → ${Object.entries(us.signal.signals[k].weights || {}).map(([a, w]) => `${a} ${(w * 100).toFixed(0)}%`).join(' ')}`); }
-  document.getElementById('feedMeta').textContent = `${f.length} 条日志事件 · 检查于 ${hhmm(STATE.checkedAt)}`;
-  ul.innerHTML = sys.map(s => `<li><span class="t">[系统]</span>${esc(s)}</li>`).join('') +
-    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts || '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">暂无真实日志事件 — 角色在小镇闲逛</li>');
+  for (const id of DISTRICTS) { const d = STATE[id], n = (CFG.districts[id].nameEn || CFG.districts[id].name); if (!d.trades) sys.push(`${n}: ${short(d.src.tradeLog)} does not exist yet — ${CFG.districts[id].placeholderEn || CFG.districts[id].placeholderLabel}`); else if (!d.tradeRows.length) sys.push(`${n}: ${short(d.src.tradeLog)} no records (0 rows)`); if (d.hb && !d.hbRows.length) sys.push(`${n}: ${short(d.src.heartbeat)} no heartbeat rows (0 rows)`); if (d.visuals && d.riskHalt) sys.push(`${n}: Risk halt — ${d.riskHaltReason} (only the user can resume)`); if (d.visuals && d.dailyHalt) sys.push(`${n}: Closed for today — ${d.dailyHaltReason}`); }
+  const us = STATE.us; if (us.signal) { const k = Object.keys(us.signal.signals || {})[0]; if (k) sys.push(`Strategist research signal (backtest output, not a trade) as_of ${us.signal.as_of}: ${k} → ${Object.entries(us.signal.signals[k].weights || {}).map(([a, w]) => `${a} ${(w * 100).toFixed(0)}%`).join(' ')}`); }
+  document.getElementById('feedMeta').textContent = `${f.length} log events · checked at ${hhmm(STATE.checkedAt)}`;
+  ul.innerHTML = sys.map(s => `<li><span class="t">[SYSTEM]</span>${esc(s)}</li>`).join('') +
+    (f.length ? f.slice(0, 200).map((e, i) => `<li class="ev" data-i="${i}"><span class="t">${esc(e.ts || '—')}</span><span class="d">${esc(e.dn)}</span>${e.isMeet ? '🏛 ' : ''}${e.isTrade ? '💱 ' : ''}${esc(e.text)}</li>`).join('') : '<li class="muted">No real log events yet — the characters are just wandering around town</li>');
   ul.querySelectorAll('li.ev').forEach(li => li.onclick = () => { const e = STATE.feed[+li.dataset.i], d = STATE[e.district]; if (!d.visuals) return; if (e.isMeet) startMeeting(e, null); else if (e.isTrade && gateOK(d, e.row)) startTradeRun(e); });
 }
 /* ---------- 建筑信息卡（数据来自 data/town-cards.json，发布时生成；缺数据显示「暂无」） ---------- */
@@ -678,7 +682,7 @@ async function loadRumor() { if (!CFG.rumor) return; const r = await fetchJSON(C
 function rumorData() { // 优先用每小时直接覆盖的 town/data/rumors.json；拿不到时用信息卡数据包里的副本
   const R = RUMOR;
   if (R && 'ts_beijing' in R) return { ts: R.ts_beijing, slot: R.slot, count: R.count, items: (R.items || []).map(i => ({ headline: i.headline, tickers: i.tickers || [], status: i.status, credibility: i.credibility, url: i.source_url, posted: i.posted_at_beijing, changed: !!i.status_changed })), next: { ts: R.next_slot?.ts_beijing, name: R.next_slot?.name }, watchlist: /^(data\/|https:)/.test(R.watchlist_path || '') ? R.watchlist_path : (CFG.rumor?.watchlist || null), budgetLeftUsd: R.x_budget_left_usd, src: short(CFG.rumor.src) };
-  if (CARDS?.rumor && !CARDS.rumor.error) return { ...CARDS.rumor, src: 'town-cards.json（rumors/latest.json 副本）' };
+  if (CARDS?.rumor && !CARDS.rumor.error) return { ...CARDS.rumor, src: 'town-cards.json (copy of rumors/latest.json)' };
   return CARDS?.rumor?.error ? { error: CARDS.rumor.error } : null;
 }
 async function loadCards() {
@@ -689,7 +693,7 @@ async function loadCards() {
   }
   if (c) CARDS = c;
 }
-const NA = '暂无';
+const NA = 'N/A';
 const bjNow = () => new Date(Date.now() + 8 * 3600e3); // 用 UTC 字段读北京时间
 function nextRun(sc) {
   if (!sc) return NA;
@@ -697,116 +701,117 @@ function nextRun(sc) {
   for (let add = 0; add < 8; add++) {
     const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + add, hh, mm));
     const wd = d.getUTCDay(); if (sc.days === 'weekdays' && (wd === 0 || wd === 6)) continue;
-    if (d > n) { const mins = Math.round((d - n) / 60000), dayL = add === 0 ? '今天' : add === 1 ? '明天' : `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-      return `${dayL} ${sc.time} 北京（${mins >= 60 ? Math.floor(mins / 60) + ' 小时 ' : ''}${mins % 60} 分钟后）${sc.days === 'weekdays' ? ' · 美股交易日' : ' · 每天'}`; }
+    if (d > n) { const mins = Math.round((d - n) / 60000), dayL = add === 0 ? 'today' : add === 1 ? 'tomorrow' : `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
+      return `${dayL} ${sc.time} Beijing (in ${mins >= 60 ? Math.floor(mins / 60) + 'h ' : ''}${mins % 60}m)${sc.days === 'weekdays' ? ' · US trading days' : ' · daily'}`; }
   }
   return NA;
 }
-const bjT = s => { if (!s) return NA; return String(s).replace('T', ' ').replace(/(\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?\s*(?:\+08:00|CST)?$/, '$1') + ' 北京'; };
+const bjT = s => { if (!s) return NA; return String(s).replace('T', ' ').replace(/(\d{2}:\d{2})(?::\d{2})?(?:\.\d+)?\s*(?:\+08:00|CST)?$/, '$1') + ' Beijing'; };
 const cRow = (k, v, cls = '') => `<div class="cr ${cls}"><span>${k}</span><b>${v == null || v === '' ? NA : v}</b></div>`;
 const money = v => v == null ? NA : '$' + fmt(v, 2);
 function goalBar(C) {
   const g = C?.goal, e = C?.equity;
-  if (!g || !g.base || !g.target) return cRow('翻倍目标', NA);
+  if (!g || !g.base || !g.target) return cRow('Double-up goal', NA);
   const p = e && e.goalProgressPct != null ? Math.max(0, Math.min(100, e.goalProgressPct)) : null;
-  return `<div class="goal"><div class="gl"><span>翻倍目标（${esc(g.deadline || '')}）</span><b>${money(g.base)} → ${money(g.target)}</b></div>
+  return `<div class="goal"><div class="gl"><span>Double-up goal (${esc(g.deadline || '')})</span><b>${money(g.base)} → ${money(g.target)}</b></div>
     <div class="gbar"><i style="width:${p == null ? 0 : Math.max(1, p)}%"></i></div>
-    <div class="gs">当前 ${e && e.equity != null ? money(e.equity) : NA} · 进度 ${p == null ? NA : fmt(e.goalProgressPct, 2) + '%'} · 还差 ${e && e.toTarget != null ? money(e.toTarget) : NA}${e && e.ts ? ` · ${esc(bjT(e.ts))}` : ''}</div></div>`;
+    <div class="gs">Current ${e && e.equity != null ? money(e.equity) : NA} · Progress ${p == null ? NA : fmt(e.goalProgressPct, 2) + '%'} · To go ${e && e.toTarget != null ? money(e.toTarget) : NA}${e && e.ts ? ` · ${esc(bjT(e.ts))}` : ''}</div></div>`;
 }
 function rulesBlock(R) {
-  if (!R || !R.version) return cRow('风控限额', NA);
+  if (!R || !R.version) return cRow('Risk limits', NA);
   const v = x => x == null ? NA : x + '%';
-  return `<div class="csec">现行风控限额（RULES.md ${esc(R.version)}${R.effective ? ' · ' + esc(R.effective) + '生效' : ''}）</div><div class="rules">
-    <div><span>单笔最大亏损</span><b>${v(R.perTradePct)}</b></div><div><span>单只标的上限</span><b>${v(R.perAssetPct)}</b></div>
-    <div><span>加密合计上限</span><b>${v(R.cryptoPct)}</b></div><div><span>单日停手线</span><b>${v(R.dailyStopPct)}</b></div>
-    <div><span>回撤全停线</span><b>${v(R.ddHaltPct)}</b></div><div><span>交易类型</span><b>${R.spotOnly ? '只做现货' : NA}</b></div></div>`;
+  return `<div class="csec">Current risk limits (RULES.md ${esc(R.version)}${R.effective ? ' · ' + esc(R.effective) + ' effective' : ''})</div><div class="rules">
+    <div><span>Max loss per trade</span><b>${v(R.perTradePct)}</b></div><div><span>Per-asset cap</span><b>${v(R.perAssetPct)}</b></div>
+    <div><span>Total crypto cap</span><b>${v(R.cryptoPct)}</b></div><div><span>Daily stop line</span><b>${v(R.dailyStopPct)}</b></div>
+    <div><span>Drawdown full-stop line</span><b>${v(R.ddHaltPct)}</b></div><div><span>Trade type</span><b>${R.spotOnly ? 'Spot only' : NA}</b></div></div>`;
 }
-function decLine(d) { return d ? `<b class="ev">${esc(d.eventZh || d.event || '')}</b> ${esc(d.signal || '')}<br><span class="dt">${esc(d.detail || '')}</span><br><small>${esc(bjT(d.ts))} · ${esc(d.by || '')}</small>` : NA; }
-function rantFor(bot) { const x = latestRant(bot); if (!x) return ''; return `<div class="crant"><span>☕ 摸鱼角 · ${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</span>“${esc(x.text)}”</div>`; }
+function decLine(d) { return d ? `<b class="ev">${esc(d.eventZh || d.event || '')}</b> ${esc(d.signal || '')}<br><span class="dt">${esc(d.detail || '')}</span><br><small>${esc(bjT(d.ts))} · ${esc(botName(d.by || ''))}</small>` : NA; }
+function rantFor(bot) { const x = latestRant(bot); if (!x) return ''; return `<div class="crant"><span>☕ Slacking Corner · ${esc(x.ts ? bjT(x.ts) : (x.date || ''))}</span>“${esc(x.text)}”</div>`; }
 const RSTAT = { '未证实': 'gray', '有媒体跟进': 'yellow', '官方证实': 'green', '已辟谣': 'red' };
-const CRED = v => ({ high: '高', medium: '中', mid: '中', low: '低', '高': '高', '中': '中', '低': '低' })[String(v || '').toLowerCase()] || (v ? esc(v) : NA);
+const RSTAT_EN = { '未证实': 'Unconfirmed', '有媒体跟进': 'Media follow-up', '官方证实': 'Officially confirmed', '已辟谣': 'Debunked' };
+const CRED = v => ({ high: 'High', medium: 'Medium', mid: 'Medium', low: 'Low', '高': 'High', '中': 'Medium', '低': 'Low' })[String(v || '').toLowerCase()] || (v ? esc(v) : NA);
 function rumorHTML() {
   const R = rumorData();
-  if (!R) return cRow('最新一轮', '暂无更新（rumors/latest.json 不存在）');
-  if (R.error) return cRow('最新一轮', esc(R.error));
-  let h = cRow('最新一轮', R.ts ? `${esc(bjT(R.ts))} · ${esc(R.slot || '')} · <b>${R.count ?? (R.items || []).length}</b> 条` : `暂无更新（${esc(R.slot || '尚未开播')}）`);
-  if (R.ts && !(R.items || []).length) h += `<div class="cbox">这一轮没有值得报的新流言</div>`;
-  else if ((R.items || []).length) h += '<div class="csec">流言</div><ul class="rumors">' + R.items.map(i => {
+  if (!R) return cRow('Latest round', 'No update yet (rumors/latest.json does not exist)');
+  if (R.error) return cRow('Latest round', esc(R.error));
+  let h = cRow('Latest round', R.ts ? `${esc(bjT(R.ts))} · ${esc(R.slot || '')} · <b>${R.count ?? (R.items || []).length}</b> items` : `No update yet (${esc(R.slot || 'not live yet')})`);
+  if (R.ts && !(R.items || []).length) h += `<div class="cbox">No new rumors worth reporting this round</div>`;
+  else if ((R.items || []).length) h += '<div class="csec">Rumors</div><ul class="rumors">' + R.items.map(i => {
     const st = RSTAT[i.status] || 'gray', hl = i.url ? `<a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">${esc(i.headline)}</a>` : esc(i.headline);
-    return `<li class="rs-${st}"><span class="rh">${hl}</span>${(i.tickers || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}${i.changed ? '<span class="newp">新进展</span>' : ''}<br><small><span class="rst">${esc(i.status || '未标注')}</span> · 可信度 ${CRED(i.credibility)}${i.posted ? ' · ' + esc(bjT(i.posted)) : ''}</small></li>`;
+    return `<li class="rs-${st}"><span class="rh">${hl}</span>${(i.tickers || []).map(t => `<span class="chip">${esc(t)}</span>`).join('')}${i.changed ? '<span class="newp">New development</span>' : ''}<br><small><span class="rst">${esc(RSTAT_EN[i.status] || i.status || 'Unlabeled')}</span> · Credibility ${CRED(i.credibility)}${i.posted ? ' · ' + esc(bjT(i.posted)) : ''}</small></li>`;
   }).join('') + '</ul>';
-  h += cRow('下一轮', R.next?.ts ? `${esc(bjT(R.next.ts))}${R.next.name ? ' · ' + esc(R.next.name) : ''}` : nextRun2(CARDS?.schedule?.rumor));
-  h += cRow('观察清单', R.watchlist ? `<a href="${esc(R.watchlist)}" target="_blank" rel="noopener">rumor-watchlist.md</a>` : '暂无（rumor-watchlist.md 不存在）');
-  h += `<div class="cnote">流言是线索，不是交易信号${R.budgetLeftUsd != null ? ` · X 剩余预算 $${fmt(Number(R.budgetLeftUsd), 2)}` : ''} · 来源 ${esc(R.src || '')}</div>`;
+  h += cRow('Next round', R.next?.ts ? `${esc(bjT(R.next.ts))}${R.next.name ? ' · ' + esc(R.next.name) : ''}` : nextRun2(CARDS?.schedule?.rumor));
+  h += cRow('Watchlist', R.watchlist ? `<a href="${esc(R.watchlist)}" target="_blank" rel="noopener">rumor-watchlist.md</a>` : 'N/A (rumor-watchlist.md does not exist)');
+  h += `<div class="cnote">Rumors are leads, not trade signals${R.budgetLeftUsd != null ? ` · X budget left $${fmt(Number(R.budgetLeftUsd), 2)}` : ''} · Source ${esc(R.src || '')}</div>`;
   return h;
 }
-function nextRun2(sc) { if (!sc) return NA; if (!sc.times) return nextRun(sc); let best = null; for (const t of sc.times) { const r = nextRun({ time: t, days: sc.days }); const m = r.match(/（(?:(\d+) 小时 )?(\d+) 分钟后）/); const mins = m ? (+(m[1] || 0)) * 60 + (+m[2]) : 1e9; if (!best || mins < best.m) best = { r, m: mins }; } return best ? best.r : NA; }
-function statusLine(k) { const d = CARDS?.botLatest?.[k]; return d ? `<div class="csec">最新状态</div><div class="cbox">${decLine(d)}</div>` : ''; }
+function nextRun2(sc) { if (!sc) return NA; if (!sc.times) return nextRun(sc); let best = null; for (const t of sc.times) { const r = nextRun({ time: t, days: sc.days }); const m = r.match(/\(in (?:(\d+)h )?(\d+)m\)/); const mins = m ? (+(m[1] || 0)) * 60 + (+m[2]) : 1e9; if (!best || mins < best.m) best = { r, m: mins }; } return best ? best.r : NA; }
+function statusLine(k) { const d = CARDS?.botLatest?.[k]; return d ? `<div class="csec">Latest status</div><div class="cbox">${decLine(d)}</div>` : ''; }
 function updatedFoot(keys) {
-  const U = CARDS?.updated || {}, P = STATE.us?.P, lab = { signal: '信号', decisionLog: '决策日志', tradeLog: '成交日志', snapshot: '账户快照', heartbeat: '止损监控心跳', panel: '面板数据', rants: '摸鱼角', report: '日报', rumor: '流言', feedSync: '日志同步' };
+  const U = CARDS?.updated || {}, P = STATE.us?.P, lab = { signal: 'Signal', decisionLog: 'Decision log', tradeLog: 'Trade log', snapshot: 'Account snapshot', heartbeat: 'Stop-monitor heartbeat', panel: '面板数据', rants: 'Slacking Corner', report: 'Daily report', rumor: 'Rumors', feedSync: 'Log sync' };
   const val = { ...U, snapshot: P?.snapshot?.taken_at || U.snapshot, heartbeat: P?.heartbeat?.ts || U.heartbeat, panel: P?.generated_at || U.panel, rants: RANTS?.updated || U.rants, rumor: rumorData()?.ts || U.rumor };
-  return '<div class="cupd">最后更新：' + keys.map(k => `${lab[k]} ${val[k] ? esc(String(val[k]).replace(/^\d{4}-/, '').replace('T', ' ').replace(/(:\d{2})(?::\d{2}(?:\.\d+)?)?\+08:00$/, '$1').replace(' 北京', '')) : '暂无'}`).join(' · ') + '</div>';
+  return '<div class="cupd">Last updated: ' + keys.map(k => `${lab[k]} ${val[k] ? esc(String(val[k]).replace(/^\d{4}-/, '').replace('T', ' ').replace(/(:\d{2})(?::\d{2}(?:\.\d+)?)?\+08:00$/, '$1').replace(/ (北京|Beijing)$/, '')) : 'N/A'}`).join(' · ') + '</div>';
 }
 function showDetail(k, keepFocus) {
   CUR_CARD = k;
-  const C = CARDS, names = { hub: 'Trading Hub 交易所', warroom: 'WAR ROOM 会议室', strategist: '策略官 STRATEGIST', risk: '风控官 RISK', trader: '交易员 TRADER', data: '数据官 DATA', rumor: '流言塔 · 流言官 RUMOR' };
+  const C = CARDS, names = { hub: 'Trading Hub (Exchange)', warroom: 'WAR ROOM (Meeting Room)', strategist: 'STRATEGIST', risk: 'RISK OFFICER', trader: 'TRADER', data: 'DATA OFFICER', rumor: 'RUMOR TOWER · RUMOR OFFICER' };
   const colors = { hub: '#d9a21b', warroom: '#9aa0b4', strategist: '#3f74c8', risk: '#d24a4a', trader: '#e8862a', data: '#7a4ac8', rumor: '#8a2a33' };
   const P = STATE.us?.P;
   const role = C?.roles?.[k] || '';
   let h = '';
-  if (!C) h = cRow('信息卡数据', NA + '（data/town-cards.json 未生成）');
+  if (!C) h = cRow('Info-card data', NA + ' (data/town-cards.json not generated)');
   else if (k === 'strategist') {
     const s = C.signal;
-    h += cRow('当前状态', s ? (s.pendingRisk ? '<span class="warnc">最新信号待风控官审核</span>' : '已出信号') : NA);
-    h += `<div class="csec">最新信号</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · 文件更新 ${esc(s.mtime)} 北京</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>章节：${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
+    h += cRow('Status', s ? (s.pendingRisk ? '<span class="warnc">Latest signal awaiting risk-officer review</span>' : 'Signal issued') : NA);
+    h += `<div class="csec">Latest signal</div>` + (s ? `<div class="cbox"><b>${esc(s.title)}</b><br><small>${esc(s.file)} · file updated ${esc(s.mtime)} Beijing</small>${s.context ? `<p>${esc(s.context)}</p>` : ''}${s.firstSteps?.length ? '<ol>' + s.firstSteps.map(x => `<li>${esc(x)}</li>`).join('') + '</ol>' : ''}${s.sections?.length ? `<small>Sections: ${s.sections.map(esc).join(' / ')}</small>` : ''}</div>` : `<div class="cbox">${NA}</div>`);
     h += statusLine('strategist');
-    h += cRow('下次例行', nextRun(C.schedule?.strategist) + (C.schedule?.strategist ? ` · ${esc(C.schedule.strategist.what)}` : ''));
+    h += cRow('Next routine run', nextRun(C.schedule?.strategist) + (C.schedule?.strategist ? ` · ${esc(C.schedule.strategist.what)}` : ''));
     h += rantFor('strategist') + updatedFoot(['signal', 'decisionLog', 'rants']);
   } else if (k === 'risk') {
     const dd = P?.drawdown?.value ?? C.equity?.drawdownPct, tier = dd == null ? null : [...CFG.risk.drawdownTiers].reverse().find(t => dd >= t.min);
-    h += cRow('当前状态', haltedAny() ? '<span class="warnc">风控暂停中（仅用户可恢复）</span>' : '自动审核中');
-    h += cRow('当前回撤', dd == null ? NA : `${fmt(dd, 2)}% <span style="color:${tier.color}">● ${esc(tier.label)}</span>`);
-    h += `<div class="csec">最近一次审核</div><div class="cbox">${decLine(C.riskLast)}</div>`;
+    h += cRow('Status', haltedAny() ? '<span class="warnc">Risk halt in effect (only the user can resume)</span>' : 'Auto-reviewing');
+    h += cRow('Current drawdown', dd == null ? NA : `${fmt(dd, 2)}% <span style="color:${tier.color}">● ${esc(tier.labelEn || tier.label)}</span>`);
+    h += `<div class="csec">Latest review</div><div class="cbox">${decLine(C.riskLast)}</div>`;
     h += rulesBlock(C.rules);
-    h += cRow('下次运行', '随信号触发（无固定时间）');
+    h += cRow('Next run', 'Triggered by signals (no fixed time)');
     h += rantFor('risk') + updatedFoot(['decisionLog', 'snapshot', 'rants']);
   } else if (k === 'trader') {
     const f = C.fills?.length ? C.fills[C.fills.length - 1] : null;
-    h += cRow('当前状态', haltedAny() ? '<span class="warnc">风控暂停：留守楼内</span>' : fx.trade ? '正在 Hub 成交' : '待命');
-    h += cRow('最新成交', f ? `${esc(f.market)} ${esc(f.side)} ${esc(f.ticker)} ${esc(f.qty)} @ ${esc(f.price)}${f.stop ? ` · 止损 ${esc(f.stop)}` : ''} · ${esc(f.mode || '')}<br><small>${esc(bjT(f.ts))}</small>` : '暂无成交（成交记录 0 笔）');
-    const hb = P?.heartbeat; if (hb) h += cRow('止损监控', hb.ok ? `${esc(hb.mode || '')} · 监控 ${hb.n_monitored ?? '—'} 只 · ${Object.entries(hb.tickers || {}).map(([t, v]) => `${esc(t)} 止损 ${v.stop ?? '—'}`).join('，')}<br><small>心跳 ${esc(bjT(hb.ts))} · 告警 ${esc(hb.alerts || 'none')}</small>` : `<span class="warnc">不可用：${esc(hb.reason || '')}</span>`);
-    h += `<div class="csec">最近动作</div><div class="cbox">${decLine(C.traderLast)}</div>`;
-    h += cRow('下次执行', nextRun(C.schedule?.trader) + (C.schedule?.trader ? ` · ${esc(C.schedule.trader.what)}` : ''));
+    h += cRow('Status', haltedAny() ? '<span class="warnc">Risk halt: staying inside</span>' : fx.trade ? 'Filling at the Hub' : 'Standing by');
+    h += cRow('Latest fill', f ? `${esc(f.market)} ${esc(f.side)} ${esc(f.ticker)} ${esc(f.qty)} @ ${esc(f.price)}${f.stop ? ` · stop ${esc(f.stop)}` : ''} · ${esc(f.mode || '')}<br><small>${esc(bjT(f.ts))}</small>` : 'No fills yet (0 fills recorded)');
+    const hb = P?.heartbeat; if (hb) h += cRow('Stop monitor', hb.ok ? `${esc(hb.mode || '')} · monitoring ${hb.n_monitored ?? '—'} tickers · ${Object.entries(hb.tickers || {}).map(([t, v]) => `${esc(t)} stop ${v.stop ?? '—'}`).join(', ')}<br><small>heartbeat ${esc(bjT(hb.ts))} · alerts ${esc(hb.alerts || 'none')}</small>` : `<span class="warnc">Unavailable: ${esc(hb.reason || '')}</span>`);
+    h += `<div class="csec">Latest action</div><div class="cbox">${decLine(C.traderLast)}</div>`;
+    h += cRow('Next execution', nextRun(C.schedule?.trader) + (C.schedule?.trader ? ` · ${esc(C.schedule.trader.what)}` : ''));
     h += rantFor('trader') + updatedFoot(['tradeLog', 'heartbeat', 'decisionLog', 'rants']);
   } else if (k === 'data') {
-    const e = P ? { equity: P.equity?.value, ts: P.equity?.ts, hwm: P.hwm?.value, drawdownPct: P.drawdown?.value, dayPnlPct: P.dayPnl?.value, source: P.equity?.src, file: 'data/us-panel.json（Mac 合并快照）', goalProgressPct: C.equity?.goalProgressPct, toTarget: C.equity?.toTarget } : (C.equity || {});
-    h += cRow('当前状态', dataStale() ? `<span class="warnc">数据过期：${esc(STATE.us?.staleReason || '心跳缺失')}</span>` : '数据新鲜');
-    h += cRow('最新权益', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
-    h += cRow('资产最高点', money(e.hwm)) + cRow('当前回撤', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('今日盈亏', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
+    const e = P ? { equity: P.equity?.value, ts: P.equity?.ts, hwm: P.hwm?.value, drawdownPct: P.drawdown?.value, dayPnlPct: P.dayPnl?.value, source: P.equity?.src, file: 'data/us-panel.json (Mac merged snapshot)', goalProgressPct: C.equity?.goalProgressPct, toTarget: C.equity?.toTarget } : (C.equity || {});
+    h += cRow('Status', dataStale() ? `<span class="warnc">Data stale: ${esc(STATE.us?.staleReason || 'heartbeat missing')}</span>` : 'Data fresh');
+    h += cRow('Latest equity', e.equity != null ? `${money(e.equity)}<br><small>${esc(bjT(e.ts))}</small>` : NA, 'big');
+    h += cRow('Equity high (HWM)', money(e.hwm)) + cRow('Current drawdown', e.drawdownPct == null ? NA : fmt(e.drawdownPct, 2) + '%') + cRow('Today\'s P&L', e.dayPnlPct == null ? NA : fmt(e.dayPnlPct, 2) + '%');
     h += goalBar(P ? { ...C, equity: { ...C.equity, equity: e.equity, ts: e.ts, goalProgressPct: C.goal?.base && C.goal?.target && e.equity != null ? (e.equity - C.goal.base) / (C.goal.target - C.goal.base) * 100 : null, toTarget: C.goal?.target && e.equity != null ? C.goal.target - e.equity : null } } : C);
-    if (C.dataReport) h += `<div class="csec">最新日报</div><div class="cbox"><b>${esc(C.dataReport.title)}</b><br>${esc(C.dataReport.summary || '')}<br><small>${esc(C.dataReport.file)} · ${esc(C.dataReport.mtime)} 北京</small></div>`;
-    if (e.source) h += `<div class="cnote">口径：${esc(e.source)}（${esc(e.file || 'data/equity-hwm.csv')}）</div>`;
-    h += cRow('下次例行', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
+    if (C.dataReport) h += `<div class="csec">Latest daily report</div><div class="cbox"><b>${esc(C.dataReport.title)}</b><br>${esc(C.dataReport.summary || '')}<br><small>${esc(C.dataReport.file)} · ${esc(C.dataReport.mtime)} Beijing</small></div>`;
+    if (e.source) h += `<div class="cnote">Basis: ${esc(e.source)} (${esc(e.file || 'data/equity-hwm.csv')})</div>`;
+    h += cRow('Next routine run', nextRun(C.schedule?.data) + (C.schedule?.data ? ` · ${esc(C.schedule.data.what)}` : ''));
     h += rantFor('data') + updatedFoot(['snapshot', 'panel', 'report', 'rants']);
   } else if (k === 'hub') {
-    h += cRow('当前状态', haltedAny() ? '<span class="warnc">路障：风控全停</span>' : dailyAny() ? '<span class="warnc">今日休市</span>' : '开放（本页只读，不连接交易所）');
-    if (P?.snapshot?.ok) { h += `<div class="csec">持仓（现货+资金合并 · ${esc(hhmm(new Date(P.snapshot.taken_at)))} 北京）</div><table class="ctab"><tr><th>资产</th><th>数量</th><th>市值</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(x.asset)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td><td>${x.value != null ? fmt(x.value) : '—'}</td></tr>`).join('')}<tr><td><b>合计</b></td><td></td><td><b>${fmt(P.snapshot.total)}</b></td></tr></table>`; }
-    else h += `<div class="csec">持仓（最新快照${C.holdingsAt ? ' · ' + esc(hhmm(new Date(C.holdingsAt))) + ' 北京' : ''}）</div>`;
-    if (!P?.snapshot?.ok) h += C.holdings?.length ? `<table class="ctab"><tr><th>资产</th><th>账户</th><th>数量</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
+    h += cRow('Status', haltedAny() ? '<span class="warnc">Roadblock: full risk stop</span>' : dailyAny() ? '<span class="warnc">Closed for today</span>' : 'Open (this page is read-only and not connected to any exchange)');
+    if (P?.snapshot?.ok) { h += `<div class="csec">Holdings (spot + funding combined · ${esc(hhmm(new Date(P.snapshot.taken_at)))} Beijing)</div><table class="ctab"><tr><th>Asset</th><th>Qty</th><th>Value</th></tr>${P.snapshot.items.filter(x => (x.value || 0) >= 0.5).map(x => `<tr><td>${esc(x.asset)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td><td>${x.value != null ? fmt(x.value) : '—'}</td></tr>`).join('')}<tr><td><b>Total</b></td><td></td><td><b>${fmt(P.snapshot.total)}</b></td></tr></table>`; }
+    else h += `<div class="csec">Holdings (latest snapshot${C.holdingsAt ? ' · ' + esc(hhmm(new Date(C.holdingsAt))) + ' Beijing' : ''})</div>`;
+    if (!P?.snapshot?.ok) h += C.holdings?.length ? `<table class="ctab"><tr><th>Asset</th><th>Account</th><th>Qty</th></tr>${C.holdings.map(x => `<tr><td>${esc(x.asset)}${x.ticker ? ` <small>${esc(x.ticker)}</small>` : ''}</td><td>${esc(x.wallet)}</td><td>${fmt(x.qty, x.qty < 1 ? 6 : 4)}</td></tr>`).join('')}</table>` : `<div class="cbox">${NA}</div>`;
     h += rulesBlock(C.rules) + goalBar(C);
-    h += cRow('成交笔数', C.fillCount == null ? NA : `${C.fillCount}${C.fillsToday != null && C.fillsTodayCap ? `（今日 ${C.fillsToday}/${C.fillsTodayCap}）` : ''}`);
+    h += cRow('Fill count', C.fillCount == null ? NA : `${C.fillCount}${C.fillsToday != null && C.fillsTodayCap ? ` (today ${C.fillsToday}/${C.fillsTodayCap})` : ''}`);
     h += rantFor('designer') + updatedFoot(['snapshot', 'tradeLog']);
   } else if (k === 'warroom') {
-    h += cRow('当前状态', fx.meeting ? '审议中' : '空闲');
-    h += `<div class="csec">最近一次决策</div><div class="cbox">${decLine(C.decisionLast)}</div>`;
-    h += cRow('最新提案', C.signal ? esc(C.signal.title) : NA);
-    h += cRow('Atlas 下发目标', nextRun(C.schedule?.atlas));
+    h += cRow('Status', fx.meeting ? 'In session' : 'Idle');
+    h += `<div class="csec">Latest decision</div><div class="cbox">${decLine(C.decisionLast)}</div>`;
+    h += cRow('Latest proposal', C.signal ? esc(C.signal.title) : NA);
+    h += cRow('Atlas target dispatch', nextRun(C.schedule?.atlas));
     h += rantFor('atlas') + updatedFoot(['decisionLog', 'signal']);
   } else if (k === 'rumor') {
     h += rumorHTML() + rantFor('rumor') + updatedFoot(['rumor']);
   }
   const m = document.getElementById('card');
-  m.querySelector('.cbody').innerHTML = `<div class="chead" style="--c:${colors[k]}"><h2>${esc(names[k])}</h2><div class="crole">${esc(role)}</div></div>${h}<div class="cfoot">数据生成于 ${C ? esc(bjT(C.generated_at.slice(0, 16))) : NA} · 只显示真实记录，缺数据写「暂无」</div>`;
+  m.querySelector('.cbody').innerHTML = `<div class="chead" style="--c:${colors[k]}"><h2>${esc(names[k])}</h2><div class="crole">${esc(role)}</div></div>${h}<div class="cfoot">Data generated at ${C ? esc(bjT(C.generated_at.slice(0, 16))) : NA} · Only real records are shown; missing data reads "N/A"</div>`;
   m.hidden = false; document.body.classList.add('cardopen'); if (!keepFocus) m.querySelector('.cclose').focus({ preventScroll: true });
 }
 function closeCard() { CUR_CARD = null; const m = document.getElementById('card'); m.hidden = true; document.body.classList.remove('cardopen'); }
@@ -822,7 +827,7 @@ cv.addEventListener('mouseleave', () => { HOVER = null; });
 function drawHover(t) {
   if (!HOVER) return; const b = B(HOVER), a = 0.6 + 0.4 * Math.sin(t * 6);
   ctx.save(); ctx.strokeStyle = `rgba(245,212,74,${a})`; ctx.lineWidth = 4; ctx.strokeRect(X(b.x) - 4, X(b.y) - 4, X(b.w) + 8, X(b.h) + 8); ctx.restore();
-  text('点击查看信息卡', X(b.x + b.w / 2), X(b.y) - 14, '#f5d44a');
+  text('Click to open info card', X(b.x + b.w / 2), X(b.y) - 14, '#f5d44a');
 }
 cv.addEventListener('click', ev => {
   const h = hitBuilding(ev), sg = CFG.rants?.sign || [322, 304];
@@ -831,7 +836,7 @@ cv.addEventListener('click', ev => {
 });
 (async function main() {
   CFG = await fetchJSON('town-config.json');
-  if (!CFG) { document.body.insertAdjacentHTML('afterbegin', '<p style="color:red">town-config.json 加载失败</p>'); return; }
+  if (!CFG) { document.body.insertAdjacentHTML('afterbegin', '<p style="color:red">Failed to load town-config.json</p>'); return; }
   S = CFG.layout.scale || 2;
   document.getElementById('refreshSec').textContent = CFG.refreshSeconds;
   const tg = document.getElementById('srcToggle'), setSrc = on => { document.body.classList.toggle('showsrc', on); tg.textContent = on ? '隐藏数据来源' : '显示数据来源'; try { localStorage.setItem('town.showsrc', on ? '1' : '0'); } catch {} };

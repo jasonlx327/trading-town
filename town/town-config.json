@@ -9,6 +9,7 @@
  "districts": {
   "us": {
    "name": "美股",
+   "nameEn": "US Stocks",
    "sources": {
     "tradeLog": "../logs/trade-log.csv",
     "heartbeat": "../logs/heartbeat.csv",
@@ -24,10 +25,12 @@
     },
     "panelData": "../data/us-panel.json"
    },
-   "placeholderLabel": "暂无日志记录"
+   "placeholderLabel": "暂无日志记录",
+   "placeholderEn": "No log records yet"
   },
   "crypto": {
    "name": "加密货币",
+   "nameEn": "Crypto",
    "sources": {
     "tradeLog": "../logs/crypto-trade-log.csv",
     "heartbeat": "../logs/crypto-heartbeat.csv",
@@ -35,24 +38,25 @@
     "panelData": "../data/us-panel.json"
    },
    "placeholderLabel": "待接入数据 / 纸上研究",
+   "placeholderEn": "Data not connected yet / paper research",
    "hideVisualsWithoutData": true
   }
  },
  "roles": {
   "strategist": {
-   "name": "策略官",
+   "name": "Strategist",
    "color": "#e0a030"
   },
   "risk": {
-   "name": "风控官",
+   "name": "Risk Officer",
    "color": "#d04848"
   },
   "trader": {
-   "name": "交易员",
+   "name": "Trader",
    "color": "#3c8ce0"
   },
   "data": {
-   "name": "数据官",
+   "name": "Data Officer",
    "color": "#40b070"
   }
  },
@@ -425,25 +429,29 @@
     "min": 0,
     "state": "green",
     "color": "#3fd86a",
-    "label": "正常 <5%"
+    "label": "正常 <5%",
+    "labelEn": "Normal <5%"
    },
    {
     "min": 5,
     "state": "yellow",
     "color": "#f5d44a",
-    "label": "预警 ≥5%"
+    "label": "预警 ≥5%",
+    "labelEn": "Warning ≥5%"
    },
    {
     "min": 10,
     "state": "orange",
     "color": "#e8862a",
-    "label": "警戒 ≥10%"
+    "label": "警戒 ≥10%",
+    "labelEn": "Alert ≥10%"
    },
    {
     "min": 15,
     "state": "red",
     "color": "#d24a4a",
-    "label": "全面停止 ≥15%（仅用户可恢复）"
+    "label": "全面停止 ≥15%（仅用户可恢复）",
+    "labelEn": "Full stop ≥15% (only the user can resume)"
    }
   ],
   "dailyHalt": {
@@ -1015,13 +1023,13 @@
   ],
   "sideLabels": [
    {
-    "text": "◀ 美股 STOCKS",
+    "text": "◀ US STOCKS",
     "x": 150,
     "y": 200,
     "district": "us"
    },
    {
-    "text": "加密 CRYPTO ▶",
+    "text": "CRYPTO ▶",
     "x": 500,
     "y": 200,
     "district": "crypto"
@@ -1031,7 +1039,7 @@
  "version": "v2.3 seaside",
  "hub": {
   "name": "Trading Hub",
-  "subtitle": "Trading Hub · 只读看板（本页不连接交易所）"
+  "subtitle": "Trading Hub · Read-only dashboard (this page does not connect to any exchange)"
  },
  "rants": {
   "src": "data/rants.json",

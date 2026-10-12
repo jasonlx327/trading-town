@@ -1,35 +1,35 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Trading 小镇 · 交易团队</title>
+<title>Trading Town · Trading Team</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <div class="title">TRADING 小镇 <span class="sub">交易团队 · Trading Town</span></div>
-  <div class="banner">只读看板 · 本页不连接交易所、不含任何 Key、不下单 · 数据来自团队日志与账户快照</div>
+  <div class="title">TRADING TOWN <span class="sub">Trading Team</span></div>
+  <div class="banner">Read-only dashboard · this page does not connect to any exchange, contains no keys and places no orders · data comes from team logs and account snapshots</div>
   <div class="clock" id="clock">—</div>
 </header>
 <main>
   <section class="stage">
     <canvas id="town" width="1280" height="720"></canvas>
-    <div class="legend">点击 / 轻触建筑查看信息卡 · 点击动态条目回放该真实事件 · 数据每 <span id="refreshSec">30</span> 秒刷新<span id="dataGen"></span></div>
-    <section class="rantwall" id="rantwall"><h3>☕ 摸鱼角 · 吐槽墙 <span class="muted">纯属玩笑 · bot 们的打工自述 · <span id="rantMeta"></span></span></h3><div class="rants" id="rants"></div></section>
+    <div class="legend">Click / tap a building to open its info card · click a live-feed entry to replay that real event · data refreshes every <span id="refreshSec">30</span> s<span id="dataGen"></span></div>
+    <section class="rantwall" id="rantwall"><h3>☕ Slacking Corner · Rant Wall <span class="muted">Just for laughs · the bots' work diaries · <span id="rantMeta"></span></span></h3><div class="rants" id="rants"></div></section>
   </section>
   <aside>
     <div class="srcbar"><button id="srcToggle" type="button">显示数据来源</button><span class="muted">悬停或点击任一行也可查看该数字的来源与更新时间</span></div>
     <div class="panel" id="panel-us"></div>
     <div class="panel" id="panel-crypto"></div>
-    <div class="panel" id="panel-detail"><h3>建筑信息卡</h3><div class="muted">点击 / 轻触小镇里的任一建筑（策略官、风控官、交易员、数据官、会议室、Trading Hub）打开信息卡</div></div>
+    <div class="panel" id="panel-detail"><h3>Building Info Card</h3><div class="muted">Click / tap any building in town (Strategist, Risk Officer, Trader, Data Officer, Meeting Room, Trading Hub) to open its info card</div></div>
   </aside>
 </main>
 <section class="feedwrap">
-  <h3>实时动态 LIVE FEED <span class="muted" id="feedMeta"></span></h3>
+  <h3>LIVE FEED <span class="muted" id="feedMeta"></span></h3>
   <ul id="feed"></ul>
 </section>
 <script src="town.js"></script>
-<div id="card" class="cardwrap" hidden role="dialog" aria-modal="true"><div class="card"><button class="cclose" type="button" aria-label="关闭">✕</button><div class="cbody"></div></div></div>
+<div id="card" class="cardwrap" hidden role="dialog" aria-modal="true"><div class="card"><button class="cclose" type="button" aria-label="Close">✕</button><div class="cbody"></div></div></div>
 </body>
 </html>
