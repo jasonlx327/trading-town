@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-12T16:21:33+08:00",
+ "generated_at": "2026-10-12T16:52:09+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -15,12 +15,12 @@
   "deadline": "end of 2026"
  },
  "equity": {
-  "ts": "2026-10-12T16:21+08:00",
-  "drawdownPct": 1.63,
-  "dayPnlPct": 0.12,
+  "ts": "2026-10-12T16:52+08:00",
+  "drawdownPct": 1.81,
+  "dayPnlPct": -0.06,
   "file": "site-equity.json (computed for the site; not the team ledger)",
-  "goalProgressPct": 4.81,
-  "returnPct": 4.81,
+  "goalProgressPct": 4.62,
+  "returnPct": 4.62,
   "hwmReturnPct": 6.55,
   "basis": "total equity (main + sub-account) vs the 2026-09-30 baseline"
  },
@@ -185,7 +185,7 @@
    "wallet": "Spot"
   }
  ],
- "holdingsAt": "2026-10-12T16:21:06.587474+08:00",
+ "holdingsAt": "2026-10-12T16:51:46.535348+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -268,13 +268,13 @@
   "tradeLog": "2026-10-08T20:50+08:00",
   "decisionLog": "2026-10-12T08:42+08:00",
   "signal": "2026-10-11 14:55",
-  "snapshot": "2026-10-12T16:21:06.587474+08:00",
-  "heartbeat": "2026-10-12T16:20:05+08:00",
-  "panel": "2026-10-12T16:21:32+08:00",
-  "rants": "2026-10-12 15:28 北京",
+  "snapshot": "2026-10-12T16:51:46.535348+08:00",
+  "heartbeat": "2026-10-12T16:47:20+08:00",
+  "panel": "2026-10-12T16:52:08+08:00",
+  "rants": "2026-10-12 16:32 北京",
   "report": "2026-10-12 08:48",
   "rumor": null,
-  "feedSync": "2026-10-12 15:29:08 北京 (box feed_bundle."
+  "feedSync": "2026-10-12 16:32:25 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "Researches the market and issues trade signals (ticker, size, stop, rationale)",
