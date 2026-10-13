@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-13T09:34:17+08:00",
+ "generated_at": "2026-10-13T10:04:36+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -15,12 +15,12 @@
   "deadline": "end of 2026"
  },
  "equity": {
-  "ts": "2026-10-13T09:34+08:00",
-  "drawdownPct": 6.35,
-  "dayPnlPct": -4.23,
+  "ts": "2026-10-13T10:04+08:00",
+  "drawdownPct": 6.46,
+  "dayPnlPct": -5.4,
   "file": "site-equity.json (computed for the site; not the team ledger)",
-  "goalProgressPct": -0.21,
-  "returnPct": -0.21,
+  "goalProgressPct": -0.33,
+  "returnPct": -0.33,
   "hwmReturnPct": 6.55,
   "basis": "total equity (main + sub-account) vs the 2026-09-30 baseline"
  },
@@ -180,7 +180,7 @@
    "wallet": "Spot"
   }
  ],
- "holdingsAt": "2026-10-13T09:34:06.236706+08:00",
+ "holdingsAt": "2026-10-13T10:04:23.704188+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -253,23 +253,23 @@
   "designer": null
  },
  "dataReport": {
-  "file": "daily-2026-10-12.md",
-  "title": "数据官日报 · 2026-10-12 · 北京时间 08:46",
-  "summary": "合并净值 [hidden]（[hidden] + [hidden]），较昨正式快照 10/11 [hidden]（+0.65%）；[hidden]，回撤 1.03%，绿灯。本北京交易日 0/10。合约零仓 ✓，子账户无异动 ✓，SPCX 未持仓；stops 已加 XLV/XLE 预买空条目（held=0，待 21:30 后条件复核）。不触发 5%/15%，不需用户就净值做决策。",
-  "mtime": "2026-10-12 08:48"
+  "file": "daily-2026-10-13.md",
+  "title": "数据官日报 · 2026-10-13 · 北京时间 09:17（取数）",
+  "summary": "合并净值 [hidden]（[hidden] + [hidden]），较 10/12 08:46 正式快照 [hidden]（−4.99%），离 5% 日亏线（[hidden]）只差 [hidden]，已于 09:2x 报风控官由其裁定；[hidden]，回撤 5.97%（未到 15%）。主因 LITE 1116.91→976.63。过去 24 小时 3 笔成交：XLV 买入 2.05、NBIS 止损卖出 0.44",
+  "mtime": "2026-10-13 09:33"
  },
  "rumor": null,
  "updated": {
   "tradeLog": "2026-10-08T20:50+08:00",
   "decisionLog": "2026-10-12T08:42+08:00",
   "signal": "2026-10-11 14:55",
-  "snapshot": "2026-10-13T09:34:06.236706+08:00",
-  "heartbeat": "2026-10-13T09:29:23+08:00",
-  "panel": "2026-10-13T09:34:16+08:00",
-  "rants": "2026-10-13 08:51 北京",
-  "report": "2026-10-12 08:48",
+  "snapshot": "2026-10-13T10:04:23.704188+08:00",
+  "heartbeat": "2026-10-13T09:59:42+08:00",
+  "panel": "2026-10-13T10:04:35+08:00",
+  "rants": "2026-10-13 09:41 北京",
+  "report": "2026-10-13 09:33",
   "rumor": null,
-  "feedSync": "2026-10-13 08:52:13 北京 (box feed_bundle."
+  "feedSync": "2026-10-13 09:42:02 北京 (box feed_bundle."
  },
  "roles": {
   "strategist": "Researches the market and issues trade signals (ticker, size, stop, rationale)",
