@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-15T15:44:06+08:00",
+ "generated_at": "2026-10-15T16:14:29+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -15,12 +15,12 @@
   "deadline": "end of 2026"
  },
  "equity": {
-  "ts": "2026-10-15T15:44+08:00",
-  "drawdownPct": 8.41,
-  "dayPnlPct": -1.62,
+  "ts": "2026-10-15T16:14+08:00",
+  "drawdownPct": 8.58,
+  "dayPnlPct": -1.8,
   "file": "site-equity.json (computed for the site; not the team ledger)",
-  "goalProgressPct": -2.41,
-  "returnPct": -2.41,
+  "goalProgressPct": -2.59,
+  "returnPct": -2.59,
   "hwmReturnPct": 6.55,
   "basis": "total equity (main + sub-account) vs the 2026-09-30 baseline"
  },
@@ -180,7 +180,7 @@
    "wallet": "Spot"
   }
  ],
- "holdingsAt": "2026-10-15T15:43:45.225713+08:00",
+ "holdingsAt": "2026-10-15T16:14:13.564024+08:00",
  "schedule": {
   "strategist": {
    "time": "20:17",
@@ -263,9 +263,9 @@
   "tradeLog": "2026-10-08T20:50+08:00",
   "decisionLog": "2026-10-12T08:42+08:00",
   "signal": "2026-10-11 14:55",
-  "snapshot": "2026-10-15T15:43:45.225713+08:00",
-  "heartbeat": "2026-10-15T15:42:51+08:00",
-  "panel": "2026-10-15T15:44:05+08:00",
+  "snapshot": "2026-10-15T16:14:13.564024+08:00",
+  "heartbeat": "2026-10-15T16:14:07+08:00",
+  "panel": "2026-10-15T16:14:28+08:00",
   "rants": "2026-10-13 09:41 北京",
   "report": "2026-10-13 09:33",
   "rumor": null,
