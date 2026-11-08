@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-08T10:14:05+08:00",
+ "generated_at": "2026-11-08T20:23:37+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -279,8 +279,8 @@
   "decisionLog": "2026-10-12T08:42+08:00",
   "signal": "2026-10-11 14:55",
   "snapshot": "2026-11-08T10:13:52.074503+08:00",
-  "heartbeat": "2026-11-08T10:09:21+08:00",
-  "panel": "2026-11-08T10:14:04+08:00",
+  "heartbeat": null,
+  "panel": null,
   "rants": "2026-10-13 09:41 北京",
   "report": "2026-10-13 09:33",
   "rumor": null,
