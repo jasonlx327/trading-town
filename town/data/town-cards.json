@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-09T20:34:08+08:00",
+ "generated_at": "2026-11-09T21:04:21+08:00",
  "rules": {
   "version": "v3",
   "effective": null,
@@ -117,7 +117,7 @@
  "fillsToday": 0,
  "fillsTodayCap": 10,
  "fillsTodayCapSource": "town-config.json",
- "fillsWindowStart": "2026-11-08 21:00",
+ "fillsWindowStart": "2026-11-09 21:00",
  "holdings": [
   {
    "asset": "EQ_GRPN",
